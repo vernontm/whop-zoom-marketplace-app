@@ -216,8 +216,9 @@ export async function getLiveMeetingForCompany(
       }
     }
 
-    // Fallback: check all live meetings
-    const liveResponse = await fetch('https://api.zoom.us/v2/users/me/meetings?type=live', {
+    // Check all users in account for live meetings
+    console.log('Checking all users for live meetings...')
+    const usersResponse = await fetch('https://api.zoom.us/v2/users?status=active&page_size=100', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -225,20 +226,58 @@ export async function getLiveMeetingForCompany(
       }
     })
 
-    if (liveResponse.ok) {
-      const liveData = await liveResponse.json()
-      const liveMeetings = liveData.meetings || []
-      console.log('Fallback - Live meetings:', liveMeetings.length)
+    if (usersResponse.ok) {
+      const usersData = await usersResponse.json()
+      const users = usersData.users || []
+      console.log('Found users:', users.length, users.map((u: {email: string}) => u.email))
 
-      if (liveMeetings.length > 0) {
-        const meeting = liveMeetings[0]
-        console.log('Returning first live meeting:', meeting.id)
-        return {
-          id: String(meeting.id),
-          topic: meeting.topic,
-          password: extractPassword(meeting)
+      for (const user of users) {
+        const userLiveResponse = await fetch(
+          `https://api.zoom.us/v2/users/${user.id}/meetings?type=live`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+
+        if (userLiveResponse.ok) {
+          const userLiveData = await userLiveResponse.json()
+          const userLiveMeetings = userLiveData.meetings || []
+          console.log(`User ${user.email} live meetings:`, userLiveMeetings.length, userLiveMeetings.map((m: {id: number}) => m.id))
+
+          // Check if permanent meeting is live for this user
+          if (permanentMeetingId) {
+            const isLive = userLiveMeetings.some(
+              (m: { id: number }) => String(m.id) === permanentMeetingId
+            )
+            if (isLive) {
+              const meeting = userLiveMeetings.find((m: { id: number }) => String(m.id) === permanentMeetingId)
+              console.log('Found permanent meeting live for user:', user.email)
+              return {
+                id: permanentMeetingId,
+                topic: meeting?.topic || credentials.defaultMeetingTitle || 'Livestream',
+                password: extractPassword(meeting)
+              }
+            }
+          }
+
+          // Return any live meeting
+          if (userLiveMeetings.length > 0) {
+            const meeting = userLiveMeetings[0]
+            console.log('Returning live meeting from user:', user.email, meeting.id)
+            return {
+              id: String(meeting.id),
+              topic: meeting.topic,
+              password: extractPassword(meeting)
+            }
+          }
         }
       }
+    } else {
+      console.log('Failed to fetch users:', usersResponse.status)
     }
   } catch (err) {
     console.error('Error checking for live meeting:', err)
