@@ -77,6 +77,23 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   // Get company ID from headers
   const companyId = headersList.get('x-whop-company-id') || 'dev-company'
   
+  // Check if user has admin/owner role from Whop headers
+  // Whop sends various headers to indicate user role
+  const whopUserRole = headersList.get('x-whop-user-role') || ''
+  const whopIsAdmin = headersList.get('x-whop-is-admin') === 'true'
+  const whopHasAccess = headersList.get('x-whop-has-access') === 'true'
+  
+  // Log all whop headers for debugging
+  console.log('Whop headers:', {
+    companyId: headersList.get('x-whop-company-id'),
+    userRole: whopUserRole,
+    isAdmin: headersList.get('x-whop-is-admin'),
+    hasAccess: headersList.get('x-whop-has-access'),
+    userToken: whopUserToken ? 'present' : 'missing'
+  })
+  
+  const isWhopAdmin = whopUserRole === 'admin' || whopUserRole === 'owner' || whopUserRole === 'moderator' || whopIsAdmin
+  
   // Use Whop username, or check for admin query param for testing
   const isAdminMode = query.admin === '1' || query.admin === 'true'
   // Generate a unique viewer name if no Whop username is available
@@ -85,9 +102,10 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   
   // For development/testing, allow access without Whop headers
   const effectiveUserId = userId || 'whop-user'
-  const userIsAdmin = await isCompanyAdmin(companyId, username) || isAdminMode
+  // User is admin if: Whop says they're admin/owner, OR they're in company admin list, OR admin mode is on
+  const userIsAdmin = isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
   
-  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyId })
+  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyId, whopUserRole, isWhopAdmin })
   
   return (
     <ExperienceClient
