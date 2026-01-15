@@ -40,7 +40,9 @@ export async function generateZoomSignatureForCompany(
   }
   
   console.log('Generating signature with:', { 
-    sdkKey: sdkKey.substring(0, 8) + '...', 
+    sdkKey: sdkKey,
+    sdkSecretFirst4: sdkSecret?.substring(0, 4),
+    sdkSecretLast4: sdkSecret?.substring(sdkSecret.length - 4),
     sdkSecretLength: sdkSecret?.length,
     mn: cleanMeetingNumber, 
     role,
