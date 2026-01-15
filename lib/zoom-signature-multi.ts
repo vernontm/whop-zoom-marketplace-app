@@ -22,7 +22,7 @@ export async function generateZoomSignatureForCompany(
 
   const { sdkKey, sdkSecret } = credentials
 
-  // Remove any spaces or dashes from meeting number (keep as string like working repo)
+  // Remove any spaces or dashes from meeting number
   const cleanMeetingNumber = meetingNumber.replace(/[\s-]/g, '')
 
   const iat = Math.round(Date.now() / 1000) - 30
@@ -31,7 +31,6 @@ export async function generateZoomSignatureForCompany(
   const oHeader = { alg: 'HS256', typ: 'JWT' }
   const oPayload = {
     sdkKey: sdkKey,
-    appKey: sdkKey,
     mn: cleanMeetingNumber,
     role: role,
     iat: iat,
