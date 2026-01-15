@@ -31,7 +31,6 @@ export async function generateZoomSignatureForCompany(
   const oHeader = { alg: 'HS256', typ: 'JWT' }
   const oPayload = {
     sdkKey: sdkKey,
-    appKey: sdkKey,
     mn: cleanMeetingNumber,
     role: role,
     iat: iat,
