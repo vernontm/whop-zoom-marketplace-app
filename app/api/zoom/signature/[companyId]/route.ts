@@ -28,6 +28,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const signature = await generateZoomSignatureForCompany(companyId, { meetingNumber, role })
     const sdkKey = await getPublicSdkKeyForCompany(companyId)
     
+    console.log('Signature API response:', { 
+      companyId, 
+      meetingNumber, 
+      role, 
+      sdkKey: sdkKey?.substring(0, 8) + '...', 
+      signatureLength: signature?.length 
+    })
+    
     return NextResponse.json({ signature, sdkKey })
   } catch (error) {
     console.error('Error generating Zoom signature:', error)
