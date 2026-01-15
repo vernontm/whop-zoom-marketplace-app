@@ -31,6 +31,7 @@ export async function generateZoomSignatureForCompany(
   const oHeader = { alg: 'HS256', typ: 'JWT' }
   const oPayload = {
     sdkKey: sdkKey,
+    appKey: sdkKey,
     mn: cleanMeetingNumber,
     role: role,
     iat: iat,
@@ -52,7 +53,10 @@ export async function generateZoomSignatureForCompany(
   const sHeader = JSON.stringify(oHeader)
   const sPayload = JSON.stringify(oPayload)
   
+  // Use the same signing approach as the working repo
   const signature = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, sdkSecret)
+  
+  console.log('Generated signature length:', signature.length)
   
   return signature
 }
