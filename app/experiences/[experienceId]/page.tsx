@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { isCompanyAdmin } from '@/lib/db'
-import { isAuthorizedOnCompany } from '@/lib/whop-sdk'
+import { whopsdk, checkUserAccessLevel } from '@/lib/whop-sdk'
 import ExperienceClient from './ExperienceClient'
 
 interface PageProps {
@@ -104,7 +104,15 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   // For development/testing, allow access without Whop headers
   const effectiveUserId = userId || 'whop-user'
   // Check if user is authorized on the company (admin/owner) using Whop SDK
-  const isAuthorizedAdmin = await isAuthorizedOnCompany(companyId)
+  let isAuthorizedAdmin = false
+  if (userId) {
+    try {
+      const access = await checkUserAccessLevel(companyId, userId)
+      isAuthorizedAdmin = access.isAdmin
+    } catch (e) {
+      console.error('Error checking access level:', e)
+    }
+  }
   
   // User is admin if: Whop SDK says authorized, OR header says admin, OR in company admin list, OR admin mode
   const userIsAdmin = isAuthorizedAdmin || isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode

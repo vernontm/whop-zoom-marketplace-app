@@ -21,10 +21,11 @@ export interface ZoomConfig {
 interface DashboardClientProps {
   companyId: string
   initialConfig: ZoomConfig
-  hasWhopHeaders: boolean
+  userName: string
+  isAdmin: boolean
 }
 
-export default function DashboardClient({ companyId, initialConfig, hasWhopHeaders }: DashboardClientProps) {
+export default function DashboardClient({ companyId, initialConfig, userName, isAdmin }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [zoomConfig, setZoomConfig] = useState<ZoomConfig>(initialConfig)
 
@@ -32,13 +33,10 @@ export default function DashboardClient({ companyId, initialConfig, hasWhopHeade
     <div className="min-h-screen bg-[#0a0a0a] flex">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} zoomConfigured={zoomConfig.configured} />
       <main className="flex-1 p-6 overflow-auto">
-        {/* Show warning if no Whop headers */}
-        {!hasWhopHeaders && (
-          <div className="mb-4 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-400 text-sm">
-            Company ID not found in Whop headers. Some features may not work correctly. 
-            Make sure you are accessing this from within a Whop app.
-          </div>
-        )}
+        {/* Welcome header */}
+        <div className="mb-6">
+          <p className="text-zinc-400 text-sm">Welcome, <span className="text-white font-medium">{userName}</span></p>
+        </div>
         
         {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} />}
         {activeTab === 'meetings' && <Meetings companyId={companyId} />}
