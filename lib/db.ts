@@ -224,16 +224,18 @@ export async function validateZoomCredentials(credentials: ZoomCredentials): Pro
     
     const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
     
-    console.log('Validating Zoom credentials for account:', accountId.substring(0, 4) + '...')
+    console.log('Validating Zoom credentials for account:', accountId.substring(0, 4) + '...', 'clientId:', clientId.substring(0, 4) + '...')
     
+    // Use form body instead of query params for better compatibility
     const response = await fetch(
-      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`,
+      'https://zoom.us/oauth/token',
       {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${basicAuth}`,
           'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        body: `grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`
       }
     )
 
