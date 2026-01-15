@@ -145,10 +145,18 @@ export async function endMeetingForCompany(companyId: string, meetingId: string)
 export async function getLiveMeetingForCompany(
   companyId: string
 ): Promise<{ id: string; topic: string; password?: string } | null> {
+  console.log('getLiveMeetingForCompany called with:', companyId)
+  
   const credentials = await getCompanyZoomCredentials(companyId)
-  if (!credentials) return null
+  console.log('Credentials found:', credentials ? 'yes' : 'no', credentials?.accountId?.substring(0, 4))
+  
+  if (!credentials) {
+    console.log('No credentials found for company:', companyId)
+    return null
+  }
 
   const accessToken = await getZoomAccessToken(companyId)
+  console.log('Got access token:', accessToken ? 'yes' : 'no')
   const permanentMeetingId = credentials.permanentMeetingId
 
   try {

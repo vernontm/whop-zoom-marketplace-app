@@ -31,20 +31,27 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minute cache
  * First checks cache, then Supabase, then env vars
  */
 export async function getCompanyZoomCredentials(companyId: string): Promise<ZoomCredentials | null> {
+  console.log('getCompanyZoomCredentials called for:', companyId)
+  console.log('Supabase configured:', !!supabase)
+  
   // Check cache first
   const cached = credentialsCache.get(companyId)
   if (cached && cached.expiresAt > Date.now()) {
+    console.log('Returning cached credentials')
     return cached.data
   }
 
   // Try Supabase
   if (supabase) {
     try {
+      console.log('Querying Supabase for company:', companyId)
       const { data, error } = await supabase
         .from('company_zoom_settings')
         .select('*')
         .eq('company_id', companyId)
         .single()
+
+      console.log('Supabase response - data:', !!data, 'error:', error?.message)
 
       if (data && !error) {
         const credentials: ZoomCredentials = {
@@ -58,6 +65,8 @@ export async function getCompanyZoomCredentials(companyId: string): Promise<Zoom
           updatedAt: data.updated_at
         }
         
+        console.log('Found credentials in Supabase, accountId:', credentials.accountId?.substring(0, 4))
+        
         // Cache the result
         credentialsCache.set(companyId, {
           data: credentials,
@@ -69,9 +78,12 @@ export async function getCompanyZoomCredentials(companyId: string): Promise<Zoom
     } catch (error) {
       console.error('Error fetching from Supabase:', error)
     }
+  } else {
+    console.log('Supabase not configured, falling back to env vars')
   }
 
   // Fallback to environment variables
+  console.log('Falling back to environment variables')
   return getEnvCredentials()
 }
 
