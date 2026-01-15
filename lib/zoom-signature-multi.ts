@@ -39,7 +39,14 @@ export async function generateZoomSignatureForCompany(
     tokenExp: exp
   }
   
-  console.log('Generating signature with:', { sdkKey: sdkKey.substring(0, 4) + '...', mn: cleanMeetingNumber, role })
+  console.log('Generating signature with:', { 
+    sdkKey: sdkKey.substring(0, 8) + '...', 
+    sdkSecretLength: sdkSecret?.length,
+    mn: cleanMeetingNumber, 
+    role,
+    iat,
+    exp
+  })
 
   const sHeader = JSON.stringify(oHeader)
   const sPayload = JSON.stringify(oPayload)
