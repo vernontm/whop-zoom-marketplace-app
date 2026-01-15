@@ -32,6 +32,12 @@ export async function checkUserAccessLevel(
   userId: string
 ): Promise<{ hasAccess: boolean; isAdmin: boolean }> {
   try {
+    // Only call checkAccess if companyId is a valid resource tag (biz_, prod_, or exp_)
+    if (!companyId || (!companyId.startsWith('biz_') && !companyId.startsWith('prod_') && !companyId.startsWith('exp_'))) {
+      console.log('Invalid resource tag for checkAccess:', companyId)
+      return { hasAccess: false, isAdmin: false }
+    }
+    
     const sdk = getWhopSdk()
     const access = await sdk.users.checkAccess(companyId, { id: userId })
     return {
