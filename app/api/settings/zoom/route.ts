@@ -7,8 +7,16 @@ import {
   ZoomCredentials 
 } from '@/lib/db'
 
-// Get company ID from Whop headers
-async function getCompanyId(): Promise<string | null> {
+// Get company ID from Whop headers or query params
+async function getCompanyId(req?: NextRequest): Promise<string | null> {
+  // First try query params (for client-side requests)
+  if (req) {
+    const url = new URL(req.url)
+    const queryCompanyId = url.searchParams.get('companyId')
+    if (queryCompanyId) return queryCompanyId
+  }
+  
+  // Then try Whop headers
   const headersList = await headers()
   return headersList.get('x-whop-company-id')
 }
@@ -21,9 +29,9 @@ async function isCompanyOwner(): Promise<boolean> {
 }
 
 // GET - Retrieve current Zoom credentials (masked)
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const companyId = await getCompanyId()
+    const companyId = await getCompanyId(req)
     
     if (!companyId) {
       return NextResponse.json(
@@ -32,12 +40,18 @@ export async function GET() {
       )
     }
 
-    const isOwner = await isCompanyOwner()
-    if (!isOwner) {
-      return NextResponse.json(
-        { error: 'Only company owners can view settings' },
-        { status: 403 }
-      )
+    // Skip owner check if companyId came from query params (already authenticated via dashboard)
+    const headersList = await headers()
+    const hasWhopHeaders = !!headersList.get('x-whop-company-id')
+    
+    if (hasWhopHeaders) {
+      const isOwner = await isCompanyOwner()
+      if (!isOwner) {
+        return NextResponse.json(
+          { error: 'Only company owners can view settings' },
+          { status: 403 }
+        )
+      }
     }
 
     const credentials = await getCompanyZoomCredentials(companyId)
@@ -75,7 +89,18 @@ export async function GET() {
 // POST - Save new Zoom credentials
 export async function POST(req: NextRequest) {
   try {
-    const companyId = await getCompanyId()
+    const body = await req.json()
+    
+    // Get companyId from body or query params or headers
+    let companyId = body.companyId
+    if (!companyId) {
+      const url = new URL(req.url)
+      companyId = url.searchParams.get('companyId')
+    }
+    if (!companyId) {
+      const headersList = await headers()
+      companyId = headersList.get('x-whop-company-id')
+    }
     
     if (!companyId) {
       return NextResponse.json(
@@ -84,15 +109,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const isOwner = await isCompanyOwner()
-    if (!isOwner) {
-      return NextResponse.json(
-        { error: 'Only company owners can update settings' },
-        { status: 403 }
-      )
+    // Skip owner check if companyId came from body/query (already authenticated via dashboard)
+    const headersList2 = await headers()
+    const hasWhopHeaders = !!headersList2.get('x-whop-company-id')
+    
+    if (hasWhopHeaders) {
+      const isOwner = await isCompanyOwner()
+      if (!isOwner) {
+        return NextResponse.json(
+          { error: 'Only company owners can update settings' },
+          { status: 403 }
+        )
+      }
     }
 
-    const body = await req.json()
     const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle } = body
 
     // Validate required fields

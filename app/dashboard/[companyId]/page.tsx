@@ -1,83 +1,44 @@
-'use client'
+import { headers } from 'next/headers'
+import { getCompanyZoomCredentials } from '@/lib/db'
+import DashboardClient from './DashboardClient'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import Sidebar from './components/Sidebar'
-import Overview from './components/Overview'
-import Meetings from './components/Meetings'
-import Settings from './components/Settings'
-import Analytics from './components/Analytics'
-
-export type TabType = 'overview' | 'meetings' | 'settings' | 'analytics'
-
-export interface ZoomConfig {
-  configured: boolean
-  accountId?: string
-  clientId?: string
-  sdkKey?: string
-  defaultMeetingTitle?: string
-  adminUsernames?: string[]
+interface PageProps {
+  params: Promise<{ companyId: string }>
 }
 
-export default function DashboardPage() {
-  const params = useParams()
-  const companyId = params.companyId as string
+export default async function DashboardPage({ params }: PageProps) {
+  const { companyId: urlCompanyId } = await params
+  const headersList = await headers()
   
-  const [activeTab, setActiveTab] = useState<TabType>('overview')
-  const [zoomConfig, setZoomConfig] = useState<ZoomConfig>({ configured: false })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch('/api/settings/zoom')
-        const data = await response.json()
-        setZoomConfig({
-          configured: data.configured || false,
-          accountId: data.accountId,
-          clientId: data.clientId,
-          sdkKey: data.sdkKey,
-          defaultMeetingTitle: data.defaultMeetingTitle,
-          adminUsernames: data.adminUsernames
-        })
-      } catch (error) {
-        console.error('Error fetching config:', error)
-      } finally {
-        setLoading(false)
+  // Get company ID from Whop headers, fallback to URL param
+  const whopCompanyId = headersList.get('x-whop-company-id')
+  const companyId = whopCompanyId || urlCompanyId
+  
+  // Fetch initial config server-side
+  let zoomConfig = { configured: false, accountId: '', clientId: '', sdkKey: '', defaultMeetingTitle: 'Livestream' }
+  
+  if (companyId && companyId !== 'demo') {
+    try {
+      const credentials = await getCompanyZoomCredentials(companyId)
+      if (credentials) {
+        zoomConfig = {
+          configured: true,
+          accountId: credentials.accountId?.substring(0, 4) + '••••' + credentials.accountId?.substring(credentials.accountId.length - 4) || '',
+          clientId: credentials.clientId?.substring(0, 4) + '••••' + credentials.clientId?.substring(credentials.clientId.length - 4) || '',
+          sdkKey: credentials.sdkKey?.substring(0, 4) + '••••' + credentials.sdkKey?.substring(credentials.sdkKey.length - 4) || '',
+          defaultMeetingTitle: credentials.defaultMeetingTitle || 'Livestream'
+        }
       }
-    }
-    fetchConfig()
-  }, [])
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return <Overview companyId={companyId} zoomConfig={zoomConfig} />
-      case 'meetings':
-        return <Meetings companyId={companyId} />
-      case 'settings':
-        return <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />
-      case 'analytics':
-        return <Analytics companyId={companyId} />
-      default:
-        return <Overview companyId={companyId} zoomConfig={zoomConfig} />
+    } catch (error) {
+      console.error('Error fetching config:', error)
     }
   }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-      </div>
-    )
-  }
-
+  
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} zoomConfigured={zoomConfig.configured} />
-      <main className="flex-1 p-6 overflow-auto">
-        {renderContent()}
-      </main>
-    </div>
+    <DashboardClient 
+      companyId={companyId} 
+      initialConfig={zoomConfig}
+      hasWhopHeaders={!!whopCompanyId}
+    />
   )
 }

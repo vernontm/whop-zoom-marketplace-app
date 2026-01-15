@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ZoomConfig } from '../page'
+import { ZoomConfig } from '../DashboardClient'
 
 interface OverviewProps {
   companyId: string

@@ -1,6 +1,6 @@
 'use client'
 
-import { TabType } from '../page'
+import { TabType } from '../DashboardClient'
 
 interface SidebarProps {
   activeTab: TabType

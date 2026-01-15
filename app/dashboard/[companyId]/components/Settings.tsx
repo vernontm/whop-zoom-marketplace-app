@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ZoomConfig } from '../page'
+import { ZoomConfig } from '../DashboardClient'
 
 interface SettingsProps {
   companyId: string
@@ -40,7 +40,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings/zoom')
+      const response = await fetch(`/api/settings/zoom?companyId=${companyId}`)
       const data = await response.json()
       if (data.configured) {
         setFormData({
@@ -67,10 +67,11 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     setMessage(null)
 
     try {
-      const response = await fetch('/api/settings/zoom', {
+      const response = await fetch(`/api/settings/zoom?companyId=${companyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          companyId,
           accountId: formData.accountId,
           clientId: formData.clientId,
           clientSecret: formData.clientSecret,
