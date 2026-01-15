@@ -22,8 +22,8 @@ export async function generateZoomSignatureForCompany(
 
   const { sdkKey, sdkSecret } = credentials
 
-  // Remove any spaces or dashes from meeting number
-  const cleanMeetingNumber = meetingNumber.replace(/[\s-]/g, '')
+  // Remove any spaces or dashes from meeting number and convert to number
+  const cleanMeetingNumber = parseInt(meetingNumber.replace(/[\s-]/g, ''), 10)
 
   const iat = Math.round(Date.now() / 1000) - 30
   const exp = iat + 60 * 60 * 2 // 2 hours
@@ -38,6 +38,8 @@ export async function generateZoomSignatureForCompany(
     exp: exp,
     tokenExp: exp
   }
+  
+  console.log('Generating signature with:', { sdkKey: sdkKey.substring(0, 4) + '...', mn: cleanMeetingNumber, role })
 
   const sHeader = JSON.stringify(oHeader)
   const sPayload = JSON.stringify(oPayload)
