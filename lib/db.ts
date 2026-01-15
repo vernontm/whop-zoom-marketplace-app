@@ -24,41 +24,31 @@ export interface CompanySettings {
 const credentialsCache = new Map<string, { data: ZoomCredentials; expiresAt: number }>()
 const CACHE_TTL = 60 * 1000 // 1 minute cache
 
+// In-memory store for settings (persists during serverless function lifetime)
+const settingsStore = new Map<string, CompanySettings>()
+
 // Key prefix for storing company settings
 const SETTINGS_KEY_PREFIX = 'zoom_settings_'
 
 /**
- * Get Zoom credentials for a specific company
+ * Get Zoom credentials for a company
+ * First checks in-memory store, then cache, then env vars
  */
 export async function getCompanyZoomCredentials(companyId: string): Promise<ZoomCredentials | null> {
-  // Check cache first
+  // Check in-memory store first (for recently saved settings)
+  const stored = settingsStore.get(companyId)
+  if (stored?.zoomCredentials) {
+    return stored.zoomCredentials
+  }
+  
+  // Check cache
   const cached = credentialsCache.get(companyId)
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data
   }
 
-  try {
-    // Try to get from Whop app data store
-    const settings = await getCompanySettings(companyId)
-    if (settings?.zoomCredentials) {
-      // Cache the result
-      credentialsCache.set(companyId, {
-        data: settings.zoomCredentials,
-        expiresAt: Date.now() + CACHE_TTL
-      })
-      return settings.zoomCredentials
-    }
-  } catch (error) {
-    console.error('Error fetching company credentials:', error)
-  }
-
-  // Fallback to environment variables for backward compatibility
-  const envCredentials = getEnvCredentials()
-  if (envCredentials) {
-    return envCredentials
-  }
-
-  return null
+  // Fallback to environment variables (primary source for now)
+  return getEnvCredentials()
 }
 
 /**
@@ -149,23 +139,23 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
 }
 
 /**
- * Save company settings
+ * Save company settings - store in memory cache for now
+ * TODO: Implement proper persistent storage (database or Whop metadata)
  */
 export async function saveCompanySettings(companyId: string, settings: CompanySettings): Promise<boolean> {
   try {
-    const response = await fetch(`https://api.whop.com/api/v5/apps/data/${SETTINGS_KEY_PREFIX}${companyId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ value: settings })
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to save settings: ${response.status}`)
+    // Store in memory for now - this will persist during the serverless function lifetime
+    settingsStore.set(companyId, settings)
+    
+    // Also update the credentials cache
+    if (settings.zoomCredentials) {
+      credentialsCache.set(companyId, {
+        data: settings.zoomCredentials,
+        expiresAt: Date.now() + CACHE_TTL
+      })
     }
-
+    
+    console.log('Settings saved for company:', companyId)
     return true
   } catch (error) {
     console.error('Error saving company settings:', error)
