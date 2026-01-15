@@ -14,7 +14,7 @@ export async function GET() {
         meeting: {
           meetingNumber: zoomLiveMeeting.id,
           password: zoomLiveMeeting.password || '',
-          title: zoomLiveMeeting.topic || 'TGFX Livestream'
+          title: zoomLiveMeeting.topic || 'Livestream'
         }
       })
     }

@@ -7,7 +7,7 @@ import { Meeting } from '@/types/meeting'
 
 // Client-side helper to get default title with date
 function getDefaultMeetingTitle(): string {
-  const baseTitle = process.env.NEXT_PUBLIC_DEFAULT_MEETING_TITLE || 'TGFX Livestream'
+  const baseTitle = process.env.NEXT_PUBLIC_DEFAULT_MEETING_TITLE || 'Livestream'
   const today = new Date()
   const month = String(today.getMonth() + 1).padStart(2, '0')
   const day = String(today.getDate()).padStart(2, '0')
@@ -113,7 +113,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-white">TGFX Livestream</h1>
+              <h1 className="text-xl font-bold text-white">Zoom Livestream</h1>
             </div>
             
             <div className="flex items-center space-x-4">

@@ -141,7 +141,7 @@ export async function getMeetingStatus(meetingId: string): Promise<'waiting' | '
   return data.status || 'waiting'
 }
 
-// Permanent meeting ID for TGFX Live Trading Stream
+// Permanent meeting ID for livestreaming
 const PERMANENT_MEETING_ID = '4911048592'
 
 export async function getLiveMeetingFromZoom(): Promise<{ id: string; topic: string; password?: string } | null> {
@@ -180,7 +180,7 @@ export async function getLiveMeetingFromZoom(): Promise<{ id: string; topic: str
         
         return {
           id: PERMANENT_MEETING_ID,
-          topic: 'TGFX Live Trading Stream',
+          topic: 'Livestream',
           password: meetingPassword
         }
       }
@@ -229,7 +229,7 @@ export async function getLiveMeetingFromZoom(): Promise<{ id: string; topic: str
             
             return {
               id: PERMANENT_MEETING_ID,
-              topic: 'TGFX Live Trading Stream',
+              topic: 'Livestream',
               password: meetingPassword
             }
           }

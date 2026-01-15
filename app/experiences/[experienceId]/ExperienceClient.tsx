@@ -19,7 +19,7 @@ interface ExperienceClientProps {
 
 // Stream schedule
 const STREAM_HOURS = '7:30 AM - 10:30 AM EST'
-const STREAM_TITLE = 'TGFX Live Trading Stream'
+const STREAM_TITLE = 'Live Stream'
 
 export default function ExperienceClient({ experienceId, companyId, user }: ExperienceClientProps) {
   const router = useRouter()
