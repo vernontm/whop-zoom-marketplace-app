@@ -1,5 +1,7 @@
 // Database utilities for multi-tenant Zoom credentials storage
-// Uses Whop's built-in key-value store for app data
+// Uses Supabase for persistent storage
+
+import { supabase, CompanyZoomSettings } from './supabase'
 
 export interface ZoomCredentials {
   accountId: string
@@ -20,34 +22,56 @@ export interface CompanySettings {
   updatedAt: string
 }
 
-// In-memory cache for credentials (per-request)
+// In-memory cache for credentials (reduces DB calls)
 const credentialsCache = new Map<string, { data: ZoomCredentials; expiresAt: number }>()
-const CACHE_TTL = 60 * 1000 // 1 minute cache
-
-// In-memory store for settings (persists during serverless function lifetime)
-const settingsStore = new Map<string, CompanySettings>()
-
-// Key prefix for storing company settings
-const SETTINGS_KEY_PREFIX = 'zoom_settings_'
+const CACHE_TTL = 5 * 60 * 1000 // 5 minute cache
 
 /**
  * Get Zoom credentials for a company
- * First checks in-memory store, then cache, then env vars
+ * First checks cache, then Supabase, then env vars
  */
 export async function getCompanyZoomCredentials(companyId: string): Promise<ZoomCredentials | null> {
-  // Check in-memory store first (for recently saved settings)
-  const stored = settingsStore.get(companyId)
-  if (stored?.zoomCredentials) {
-    return stored.zoomCredentials
-  }
-  
-  // Check cache
+  // Check cache first
   const cached = credentialsCache.get(companyId)
   if (cached && cached.expiresAt > Date.now()) {
     return cached.data
   }
 
-  // Fallback to environment variables (primary source for now)
+  // Try Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('company_zoom_settings')
+        .select('*')
+        .eq('company_id', companyId)
+        .single()
+
+      if (data && !error) {
+        const credentials: ZoomCredentials = {
+          accountId: data.account_id,
+          clientId: data.client_id,
+          clientSecret: data.client_secret,
+          sdkKey: data.sdk_key,
+          sdkSecret: data.sdk_secret,
+          permanentMeetingId: data.permanent_meeting_id,
+          defaultMeetingTitle: data.default_meeting_title || 'Livestream',
+          updatedAt: data.updated_at
+        }
+        
+        // Cache the result
+        credentialsCache.set(companyId, {
+          data: credentials,
+          expiresAt: Date.now() + CACHE_TTL
+        })
+        
+        return credentials
+      }
+    } catch (error) {
+      console.error('Error fetching from Supabase:', error)
+    }
+  }
+
+  // Fallback to environment variables
   return getEnvCredentials()
 }
 
@@ -111,27 +135,36 @@ export async function saveCompanyZoomCredentials(
 }
 
 /**
- * Get full company settings
+ * Get full company settings from Supabase
  */
 export async function getCompanySettings(companyId: string): Promise<CompanySettings | null> {
+  if (!supabase) return null
+  
   try {
-    // Use Whop's app data API to store settings
-    const response = await fetch(`https://api.whop.com/api/v5/apps/data/${SETTINGS_KEY_PREFIX}${companyId}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    })
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('*')
+      .eq('company_id', companyId)
+      .single()
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null
-      }
-      throw new Error(`Failed to fetch settings: ${response.status}`)
+    if (error || !data) return null
+
+    return {
+      companyId: data.company_id,
+      zoomCredentials: {
+        accountId: data.account_id,
+        clientId: data.client_id,
+        clientSecret: data.client_secret,
+        sdkKey: data.sdk_key,
+        sdkSecret: data.sdk_secret,
+        permanentMeetingId: data.permanent_meeting_id,
+        defaultMeetingTitle: data.default_meeting_title || 'Livestream',
+        updatedAt: data.updated_at
+      },
+      adminUsernames: data.admin_usernames || [],
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
     }
-
-    const data = await response.json()
-    return data.value as CompanySettings
   } catch (error) {
     console.error('Error fetching company settings:', error)
     return null
@@ -139,22 +172,45 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
 }
 
 /**
- * Save company settings - store in memory cache for now
- * TODO: Implement proper persistent storage (database or Whop metadata)
+ * Save company settings to Supabase
  */
 export async function saveCompanySettings(companyId: string, settings: CompanySettings): Promise<boolean> {
+  if (!supabase) {
+    console.error('Supabase not configured')
+    return false
+  }
+  
   try {
-    // Store in memory for now - this will persist during the serverless function lifetime
-    settingsStore.set(companyId, settings)
-    
-    // Also update the credentials cache
+    const dbRecord = {
+      company_id: companyId,
+      account_id: settings.zoomCredentials?.accountId,
+      client_id: settings.zoomCredentials?.clientId,
+      client_secret: settings.zoomCredentials?.clientSecret,
+      sdk_key: settings.zoomCredentials?.sdkKey,
+      sdk_secret: settings.zoomCredentials?.sdkSecret,
+      permanent_meeting_id: settings.zoomCredentials?.permanentMeetingId,
+      default_meeting_title: settings.zoomCredentials?.defaultMeetingTitle || 'Livestream',
+      admin_usernames: settings.adminUsernames || [],
+      updated_at: new Date().toISOString()
+    }
+
+    const { error } = await supabase
+      .from('company_zoom_settings')
+      .upsert(dbRecord, { onConflict: 'company_id' })
+
+    if (error) {
+      console.error('Supabase upsert error:', error)
+      return false
+    }
+
+    // Update cache
     if (settings.zoomCredentials) {
       credentialsCache.set(companyId, {
         data: settings.zoomCredentials,
         expiresAt: Date.now() + CACHE_TTL
       })
     }
-    
+
     console.log('Settings saved for company:', companyId)
     return true
   } catch (error) {
@@ -164,21 +220,21 @@ export async function saveCompanySettings(companyId: string, settings: CompanySe
 }
 
 /**
- * Delete company settings (for uninstall)
+ * Delete company settings from Supabase
  */
 export async function deleteCompanySettings(companyId: string): Promise<boolean> {
+  if (!supabase) return false
+  
   try {
-    const response = await fetch(`https://api.whop.com/api/v5/apps/data/${SETTINGS_KEY_PREFIX}${companyId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${process.env.WHOP_API_KEY}`
-      }
-    })
+    const { error } = await supabase
+      .from('company_zoom_settings')
+      .delete()
+      .eq('company_id', companyId)
 
     // Invalidate cache
     credentialsCache.delete(companyId)
 
-    return response.ok || response.status === 404
+    return !error
   } catch (error) {
     console.error('Error deleting company settings:', error)
     return false
