@@ -188,7 +188,7 @@ export async function saveCompanySettings(companyId: string, settings: CompanySe
       client_secret: settings.zoomCredentials?.clientSecret,
       sdk_key: settings.zoomCredentials?.sdkKey,
       sdk_secret: settings.zoomCredentials?.sdkSecret,
-      permanent_meeting_id: settings.zoomCredentials?.permanentMeetingId,
+      permanent_meeting_id: settings.zoomCredentials?.permanentMeetingId?.replace(/\s/g, ''),
       default_meeting_title: settings.zoomCredentials?.defaultMeetingTitle || 'Livestream',
       admin_usernames: settings.adminUsernames || [],
       updated_at: new Date().toISOString()
