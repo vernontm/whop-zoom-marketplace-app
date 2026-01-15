@@ -213,10 +213,21 @@ export async function isCompanyAdmin(companyId: string, username: string): Promi
  */
 export async function validateZoomCredentials(credentials: ZoomCredentials): Promise<{ valid: boolean; error?: string }> {
   try {
-    const basicAuth = Buffer.from(`${credentials.clientId}:${credentials.clientSecret}`).toString('base64')
+    // Ensure credentials are trimmed
+    const accountId = credentials.accountId?.trim()
+    const clientId = credentials.clientId?.trim()
+    const clientSecret = credentials.clientSecret?.trim()
+    
+    if (!accountId || !clientId || !clientSecret) {
+      return { valid: false, error: 'Missing required credentials (Account ID, Client ID, or Client Secret)' }
+    }
+    
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+    
+    console.log('Validating Zoom credentials for account:', accountId.substring(0, 4) + '...')
     
     const response = await fetch(
-      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${credentials.accountId}`,
+      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${encodeURIComponent(accountId)}`,
       {
         method: 'POST',
         headers: {
@@ -227,12 +238,28 @@ export async function validateZoomCredentials(credentials: ZoomCredentials): Pro
     )
 
     if (!response.ok) {
-      const error = await response.text()
-      return { valid: false, error: `Invalid API credentials: ${error}` }
+      const errorText = await response.text()
+      console.error('Zoom validation failed:', response.status, errorText)
+      
+      // Parse error for better message
+      try {
+        const errorJson = JSON.parse(errorText)
+        if (errorJson.error === 'invalid_request') {
+          return { valid: false, error: 'Invalid credentials format. Make sure you are using Server-to-Server OAuth credentials from Zoom Marketplace.' }
+        }
+        if (errorJson.error === 'invalid_client') {
+          return { valid: false, error: 'Invalid Client ID or Client Secret. Please verify your credentials.' }
+        }
+        return { valid: false, error: `Zoom API error: ${errorJson.reason || errorJson.error || errorText}` }
+      } catch {
+        return { valid: false, error: `Zoom API error (${response.status}): ${errorText}` }
+      }
     }
 
+    console.log('Zoom credentials validated successfully')
     return { valid: true }
   } catch (error) {
+    console.error('Zoom validation error:', error)
     return { valid: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

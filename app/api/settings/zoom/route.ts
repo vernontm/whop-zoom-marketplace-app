@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle } = body
+    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, skipValidation } = body
 
     // Validate required fields
     if (!accountId || !clientId || !clientSecret || !sdkKey || !sdkSecret) {
@@ -143,13 +143,15 @@ export async function POST(req: NextRequest) {
       defaultMeetingTitle: defaultMeetingTitle?.trim() || 'Livestream'
     }
 
-    // Validate credentials with Zoom API
-    const validation = await validateZoomCredentials(credentials as ZoomCredentials)
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: `Invalid Zoom credentials: ${validation.error}` },
-        { status: 400 }
-      )
+    // Validate credentials with Zoom API (unless skipped)
+    if (!skipValidation) {
+      const validation = await validateZoomCredentials(credentials as ZoomCredentials)
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: `Invalid Zoom credentials: ${validation.error}` },
+          { status: 400 }
+        )
+      }
     }
 
     // Save credentials

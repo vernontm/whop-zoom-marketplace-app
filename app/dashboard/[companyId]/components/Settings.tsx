@@ -33,6 +33,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [skipValidation, setSkipValidation] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -79,7 +80,8 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkSecret: formData.sdkSecret,
           permanentMeetingId: formData.permanentMeetingId,
           defaultMeetingTitle: formData.defaultMeetingTitle,
-          adminUsernames: formData.adminUsernames.split(',').map(u => u.trim()).filter(Boolean)
+          adminUsernames: formData.adminUsernames.split(',').map(u => u.trim()).filter(Boolean),
+          skipValidation
         })
       })
 
@@ -242,6 +244,24 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
               hint="Comma-separated Whop usernames who can start meetings"
             />
           </div>
+        </div>
+
+        {/* Skip Validation Option */}
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={skipValidation}
+              onChange={(e) => setSkipValidation(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-emerald-500"
+            />
+            <div>
+              <span className="text-white font-medium">Skip credential validation</span>
+              <p className="text-zinc-500 text-xs mt-1">
+                Enable this if you're having trouble validating credentials. Make sure your Server-to-Server OAuth app is activated in Zoom Marketplace.
+              </p>
+            </div>
+          </label>
         </div>
 
         {/* Submit */}
