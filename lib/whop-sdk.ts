@@ -69,33 +69,25 @@ export async function sendPushNotification(
   body: string
 ): Promise<boolean> {
   try {
-    const apiKey = process.env.WHOP_API_KEY
-    if (!apiKey) {
-      console.error('WHOP_API_KEY not configured')
+    const sdk = getWhopSdk()
+    
+    // Use the SDK's notifications.create method
+    // experienceId can be exp_ or biz_ prefixed
+    const isCompany = experienceId.startsWith('biz_')
+    
+    const result = await sdk.notifications.create(
+      isCompany 
+        ? { company_id: experienceId, title, content: body }
+        : { experience_id: experienceId, title, content: body }
+    )
+
+    if (result.success) {
+      console.log('Push notification sent successfully')
+      return true
+    } else {
+      console.error('Failed to send push notification')
       return false
     }
-
-    const response = await fetch('https://api.whop.com/api/v5/notifications/push', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        experience_id: experienceId,
-        title,
-        body
-      })
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Failed to send push notification:', response.status, errorText)
-      return false
-    }
-
-    console.log('Push notification sent successfully')
-    return true
   } catch (error) {
     console.error('Error sending push notification:', error)
     return false
