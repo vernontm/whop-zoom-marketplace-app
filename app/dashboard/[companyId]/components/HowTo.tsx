@@ -17,10 +17,10 @@ export default function HowTo() {
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Create a Zoom Server-to-Server OAuth App</h2>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-zinc-300 mb-4">
               This app type allows your integration to access Zoom APIs without user interaction.
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-zinc-300 text-sm mb-4">
+            <ol className="list-decimal list-inside space-y-3 text-zinc-300 mb-4">
               <li>Go to the <a href="https://marketplace.zoom.us/" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Zoom App Marketplace</a></li>
               <li>Click <strong className="text-white">Develop</strong> → <strong className="text-white">Build App</strong></li>
               <li>Select <strong className="text-white">Server-to-Server OAuth</strong> app type</li>
@@ -56,7 +56,7 @@ export default function HowTo() {
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Add Required Scopes</h2>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-zinc-300 mb-4">
               In your Server-to-Server OAuth app, go to the <strong className="text-white">Scopes</strong> tab and add these permissions:
             </p>
             <div className="bg-zinc-900 rounded-xl p-4 space-y-2">
@@ -92,10 +92,10 @@ export default function HowTo() {
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Create a Meeting SDK App</h2>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-zinc-300 mb-4">
               This app type allows users to join meetings directly in the browser.
             </p>
-            <ol className="list-decimal list-inside space-y-2 text-zinc-300 text-sm mb-4">
+            <ol className="list-decimal list-inside space-y-3 text-zinc-300 mb-4">
               <li>Go back to <a href="https://marketplace.zoom.us/" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Zoom App Marketplace</a></li>
               <li>Click <strong className="text-white">Develop</strong> → <strong className="text-white">Build App</strong></li>
               <li>Select <strong className="text-white">Meeting SDK</strong> app type</li>
@@ -127,7 +127,7 @@ export default function HowTo() {
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Enter Your Credentials</h2>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-zinc-300 mb-4">
               Go to the <strong className="text-white">Configure Settings</strong> tab and enter all the credentials you collected:
             </p>
             <div className="bg-zinc-900 rounded-xl p-4 space-y-3">
@@ -159,11 +159,11 @@ export default function HowTo() {
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Tips</h2>
-            <ul className="space-y-2 text-zinc-300 text-sm">
+            <ul className="space-y-2 text-zinc-300">
               <li>• Make sure your Server-to-Server OAuth app is <strong className="text-white">activated</strong> before testing</li>
               <li>• The SDK Key and SDK Secret are different from the OAuth Client ID and Secret</li>
               <li>• If you get signature errors, double-check that you're using Meeting SDK credentials (not OAuth)</li>
-              <li>• You can use the <strong className="text-white">Skip validation</strong> checkbox if you're having trouble</li>
+              <li>• If you get errors, double-check all credentials are entered correctly</li>
             </ul>
           </div>
         </div>

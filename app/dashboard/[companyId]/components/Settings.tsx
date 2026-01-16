@@ -16,7 +16,6 @@ interface FormData {
   sdkSecret: string
   permanentMeetingId: string
   defaultMeetingTitle: string
-  adminUsernames: string
 }
 
 export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
@@ -27,13 +26,11 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     sdkKey: '',
     sdkSecret: '',
     permanentMeetingId: '',
-    defaultMeetingTitle: 'Meeting',
-    adminUsernames: ''
+    defaultMeetingTitle: 'Meeting'
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [skipValidation, setSkipValidation] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -51,8 +48,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkKey: data.sdkKey || '',
           sdkSecret: '',
           permanentMeetingId: data.permanentMeetingId || '',
-          defaultMeetingTitle: data.defaultMeetingTitle || 'Livestream',
-          adminUsernames: data.adminUsernames?.join(', ') || ''
+          defaultMeetingTitle: data.defaultMeetingTitle || 'Livestream'
         })
       }
     } catch (error) {
@@ -80,8 +76,8 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkSecret: formData.sdkSecret,
           permanentMeetingId: formData.permanentMeetingId,
           defaultMeetingTitle: formData.defaultMeetingTitle,
-          adminUsernames: formData.adminUsernames.split(',').map(u => u.trim()).filter(Boolean),
-          skipValidation
+          adminUsernames: [],
+          skipValidation: true
         })
       })
 
@@ -95,7 +91,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           clientId: formData.clientId,
           sdkKey: formData.sdkKey,
           defaultMeetingTitle: formData.defaultMeetingTitle,
-          adminUsernames: formData.adminUsernames.split(',').map(u => u.trim()).filter(Boolean)
+          adminUsernames: []
         })
         // Clear secrets after save
         setFormData(prev => ({ ...prev, clientSecret: '', sdkSecret: '' }))
@@ -229,39 +225,14 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
               placeholder="Livestream"
             />
             <InputField
-              label="Permanent Meeting ID"
+              label="Meeting ID"
               name="permanentMeetingId"
               value={formData.permanentMeetingId}
               onChange={handleChange}
-              placeholder="Optional - for recurring meetings"
-            />
-            <InputField
-              label="Admin Usernames"
-              name="adminUsernames"
-              value={formData.adminUsernames}
-              onChange={handleChange}
-              placeholder="user1, user2, user3"
-              hint="Comma-separated Whop usernames who can start meetings"
+              placeholder="Your Zoom Meeting ID"
+              required
             />
           </div>
-        </div>
-
-        {/* Skip Validation Option */}
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={skipValidation}
-              onChange={(e) => setSkipValidation(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-emerald-500 focus:ring-emerald-500"
-            />
-            <div>
-              <span className="text-white font-medium">Skip credential validation</span>
-              <p className="text-zinc-500 text-xs mt-1">
-                Enable this if you're having trouble validating credentials. Make sure your Server-to-Server OAuth app is activated in Zoom Marketplace.
-              </p>
-            </div>
-          </label>
         </div>
 
         {/* Submit */}
@@ -297,18 +268,23 @@ interface InputFieldProps {
   placeholder?: string
   type?: string
   hint?: string
+  required?: boolean
 }
 
-function InputField({ label, name, value, onChange, placeholder, type = 'text', hint }: InputFieldProps) {
+function InputField({ label, name, value, onChange, placeholder, type = 'text', hint, required }: InputFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-white mb-2">{label}</label>
+      <label className="block text-sm font-medium text-white mb-2">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
       <input
         type={type}
         name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        required={required}
         className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
       />
       {hint && <p className="text-zinc-400 text-xs mt-1">{hint}</p>}
