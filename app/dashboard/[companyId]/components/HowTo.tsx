@@ -209,9 +209,9 @@ export default function HowTo() {
             <h2 className="text-white font-bold text-lg mb-2">Tips</h2>
             <ul className="space-y-2 text-zinc-300">
               <li>• Make sure your Server-to-Server OAuth app is <strong className="text-white">activated</strong> before testing</li>
+              <li>• Use <strong className="text-white">Production credentials</strong>, not Development credentials</li>
               <li>• The SDK Key and SDK Secret are different from the OAuth Client ID and Secret</li>
               <li>• If you get signature errors, double-check that you're using Meeting SDK credentials (not OAuth)</li>
-              <li>• If you get errors, double-check all credentials are entered correctly</li>
             </ul>
           </div>
         </div>
