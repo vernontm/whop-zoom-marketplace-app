@@ -101,10 +101,11 @@ function LiveMeetingContent() {
             console.log('Zoom SDK initialized')
             
             // Join the meeting as view-only (no audio/video)
+            console.log('Joining with:', { sdkKey, meetingNumber, userName, signatureLength: signature?.length })
             ZoomMtg.join({
               signature: signature,
               sdkKey: sdkKey,
-              meetingNumber: meetingNumber,
+              meetingNumber: String(meetingNumber),
               userName: userName,
               passWord: password,
               success: () => {
