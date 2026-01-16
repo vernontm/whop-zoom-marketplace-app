@@ -77,6 +77,8 @@ function LiveMeetingContent() {
         }
 
         const { signature, sdkKey } = await signatureResponse.json()
+        
+        console.log('Received from API - sdkKey:', sdkKey, 'signature length:', signature?.length)
 
         if (!sdkKey) {
           throw new Error('Zoom SDK key not configured for this company')
