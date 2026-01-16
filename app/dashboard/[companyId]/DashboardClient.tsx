@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import Overview from './components/Overview'
 import Settings from './components/Settings'
+import HowTo from './components/HowTo'
 
-export type TabType = 'overview' | 'settings'
+export type TabType = 'overview' | 'settings' | 'howto'
 
 export interface ZoomConfig {
   configured: boolean
@@ -29,6 +30,7 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
   const tabs = [
     { id: 'overview' as TabType, label: 'Overview' },
     { id: 'settings' as TabType, label: 'Configure Settings' },
+    { id: 'howto' as TabType, label: 'How To' },
   ]
 
   return (
@@ -58,6 +60,7 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
       <main className="p-6">
         {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} onNavigateToSettings={() => setActiveTab('settings')} />}
         {activeTab === 'settings' && <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />}
+        {activeTab === 'howto' && <HowTo />}
       </main>
     </div>
   )

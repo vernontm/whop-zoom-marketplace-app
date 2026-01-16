@@ -18,7 +18,7 @@ export default function Overview({ companyId, zoomConfig, onNavigateToSettings }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-zinc-500 mt-1">Manage your Zoom meetings</p>
+          <p className="text-zinc-500 mt-1">Host Zoom meetings directly in Whop</p>
         </div>
       </div>
 
