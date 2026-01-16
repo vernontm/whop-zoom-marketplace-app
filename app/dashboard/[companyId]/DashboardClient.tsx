@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import Overview from './components/Overview'
-import Meetings from './components/Meetings'
 import Settings from './components/Settings'
 
-export type TabType = 'overview' | 'meetings' | 'settings'
+export type TabType = 'overview' | 'settings'
 
 export interface ZoomConfig {
   configured: boolean
@@ -29,7 +28,6 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
 
   const tabs = [
     { id: 'overview' as TabType, label: 'Overview' },
-    { id: 'meetings' as TabType, label: 'Meetings' },
     { id: 'settings' as TabType, label: 'Configure Settings' },
   ]
 
@@ -59,7 +57,6 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
       {/* Main Content */}
       <main className="p-6">
         {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} />}
-        {activeTab === 'meetings' && <Meetings companyId={companyId} />}
         {activeTab === 'settings' && <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />}
       </main>
     </div>
