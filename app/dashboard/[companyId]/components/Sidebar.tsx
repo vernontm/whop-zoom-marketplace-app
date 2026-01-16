@@ -25,14 +25,14 @@ export default function Sidebar({ activeTab, setActiveTab, zoomConfigured }: Sid
           </div>
           <div>
             <h1 className="text-white font-bold text-lg">Zoom Live</h1>
-            <p className="text-zinc-500 text-xs">Dashboard</p>
+            <p className="text-zinc-300 text-xs">Dashboard</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4">
-        <div className="text-zinc-500 text-xs font-medium uppercase tracking-wider mb-4 px-3">
+        <div className="text-white text-xs font-medium uppercase tracking-wider mb-4 px-3">
           Main
         </div>
         <ul className="space-y-1">
@@ -62,7 +62,7 @@ export default function Sidebar({ activeTab, setActiveTab, zoomConfigured }: Sid
         <div className="bg-zinc-900 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <span className={`w-2 h-2 rounded-full ${zoomConfigured ? 'bg-emerald-500' : 'bg-orange-500'}`}></span>
-            <span className="text-sm text-zinc-400">
+            <span className="text-sm text-white">
               {zoomConfigured ? 'Zoom Connected' : 'Setup Required'}
             </span>
           </div>
