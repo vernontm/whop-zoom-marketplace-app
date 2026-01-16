@@ -224,8 +224,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
               value={formData.permanentMeetingId}
               onChange={handleChange}
               placeholder="Your Zoom Meeting ID (e.g., 123 456 7890)"
-              required
-              hint="Find this in your Zoom app or at zoom.us/meeting"
+              hint="Find this in your Zoom app or at zoom.us/meeting. Leave blank to keep existing."
             />
           </div>
         </div>
