@@ -18,6 +18,15 @@ interface FormData {
   webhookSecretToken: string
 }
 
+interface SavedData {
+  accountId: string
+  clientId: string
+  sdkKey: string
+  permanentMeetingId: string
+}
+
+const WEBHOOK_URL = 'https://whop-zoom-marketplace-app.vercel.app/api/zoom/webhook'
+
 export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
   const [formData, setFormData] = useState<FormData>({
     accountId: '',
@@ -31,6 +40,15 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [savedData, setSavedData] = useState<SavedData>({ accountId: '', clientId: '', sdkKey: '', permanentMeetingId: '' })
+  const [copied, setCopied] = useState(false)
+  const [showNotificationModal, setShowNotificationModal] = useState(false)
+  const [notificationSettings, setNotificationSettings] = useState({
+    startTitle: 'Meeting Started!',
+    startBody: 'A Zoom meeting is now live. Join now!',
+    endTitle: 'Meeting Ended',
+    endBody: 'The Zoom meeting has ended.'
+  })
 
   useEffect(() => {
     fetchSettings()
@@ -49,6 +67,12 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkSecret: '',
           permanentMeetingId: data.permanentMeetingId || '',
           webhookSecretToken: ''
+        })
+        setSavedData({
+          accountId: data.accountId || '',
+          clientId: data.clientId || '',
+          sdkKey: data.sdkKey || '',
+          permanentMeetingId: data.permanentMeetingId || ''
         })
       }
     } catch (error) {
@@ -94,8 +118,14 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           defaultMeetingTitle: 'Meeting',
           adminUsernames: []
         })
-        // Clear secrets after save
-        setFormData(prev => ({ ...prev, clientSecret: '', sdkSecret: '' }))
+        // Clear secrets after save and update saved data
+        setFormData(prev => ({ ...prev, clientSecret: '', sdkSecret: '', webhookSecretToken: '' }))
+        setSavedData({
+          accountId: formData.accountId || savedData.accountId,
+          clientId: formData.clientId || savedData.clientId,
+          sdkKey: formData.sdkKey || savedData.sdkKey,
+          permanentMeetingId: formData.permanentMeetingId || savedData.permanentMeetingId
+        })
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to save settings' })
       }
@@ -118,12 +148,33 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     )
   }
 
+  const copyWebhookUrl = () => {
+    navigator.clipboard.writeText(WEBHOOK_URL)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const abbrev = (value: string) => {
+    if (!value || value.length < 8) return ''
+    return `${value.substring(0, 4)}...${value.substring(value.length - 4)}`
+  }
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-zinc-300 mt-1">Configure your Zoom integration</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Settings</h1>
+          <p className="text-zinc-300 mt-1">Configure your Zoom integration</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowNotificationModal(true)}
+          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors flex items-center gap-2"
+        >
+          <BellIcon className="w-4 h-4" />
+          Notifications
+        </button>
       </div>
 
       {/* Message */}
@@ -134,132 +185,146 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Server-to-Server OAuth */}
-        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
-              <ServerIcon className="w-5 h-5 text-blue-500" />
+        {/* Two column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Server-to-Server OAuth */}
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                <ServerIcon className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold">Server-to-Server OAuth</h2>
+                <p className="text-zinc-300 text-sm">For creating and managing meetings</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-white font-semibold">Server-to-Server OAuth</h2>
-              <p className="text-zinc-300 text-sm">For creating and managing meetings</p>
-            </div>
-          </div>
 
-          <div className="space-y-4">
-            <InputField
-              label="Account ID"
-              name="accountId"
-              value={formData.accountId}
-              onChange={handleChange}
-              placeholder="Your Zoom Account ID"
-            />
-            <InputField
-              label="Client ID"
-              name="clientId"
-              value={formData.clientId}
-              onChange={handleChange}
-              placeholder="OAuth Client ID"
-            />
-            <InputField
-              label="Client Secret"
-              name="clientSecret"
-              value={formData.clientSecret}
-              onChange={handleChange}
-              placeholder="••••••••••••••••"
-              type="password"
-              hint="Leave blank to keep existing"
-            />
-          </div>
-        </div>
-
-        {/* Meeting SDK */}
-        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-              <VideoIcon className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <h2 className="text-white font-semibold">Meeting SDK</h2>
-              <p className="text-zinc-300 text-sm">For embedding meetings in your app</p>
+            <div className="space-y-4">
+              <InputField
+                label="Account ID"
+                name="accountId"
+                value={formData.accountId}
+                onChange={handleChange}
+                placeholder={savedData.accountId ? `Current: ${abbrev(savedData.accountId)}` : 'Your Zoom Account ID'}
+              />
+              <InputField
+                label="Client ID"
+                name="clientId"
+                value={formData.clientId}
+                onChange={handleChange}
+                placeholder={savedData.clientId ? `Current: ${abbrev(savedData.clientId)}` : 'OAuth Client ID'}
+              />
+              <InputField
+                label="Client Secret"
+                name="clientSecret"
+                value={formData.clientSecret}
+                onChange={handleChange}
+                placeholder="••••••••••••••••"
+                type="password"
+                hint="Leave blank to keep existing"
+              />
             </div>
           </div>
 
-          <div className="space-y-4">
-            <InputField
-              label="SDK Key"
-              name="sdkKey"
-              value={formData.sdkKey}
-              onChange={handleChange}
-              placeholder="Your SDK Key"
-            />
-            <InputField
-              label="SDK Secret"
-              name="sdkSecret"
-              value={formData.sdkSecret}
-              onChange={handleChange}
-              placeholder="••••••••••••••••"
-              type="password"
-              hint="Leave blank to keep existing"
-            />
-          </div>
-        </div>
-
-        {/* Meeting Settings */}
-        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-zinc-700 rounded-xl flex items-center justify-center">
-              <SettingsIcon className="w-5 h-5 text-zinc-400" />
+          {/* Meeting SDK */}
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                <VideoIcon className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold">Meeting SDK</h2>
+                <p className="text-zinc-300 text-sm">For embedding meetings in your app</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-white font-semibold">Meeting Settings</h2>
-              <p className="text-zinc-300 text-sm">Your Zoom meeting configuration</p>
-            </div>
-          </div>
 
-          <div className="space-y-4">
-            <InputField
-              label="Meeting ID"
-              name="permanentMeetingId"
-              value={formData.permanentMeetingId}
-              onChange={handleChange}
-              placeholder="Your Zoom Meeting ID (e.g., 123 456 7890)"
-              hint="Find this in your Zoom app or at zoom.us/meeting. Leave blank to keep existing."
-            />
-          </div>
-        </div>
-
-        {/* Webhook Settings */}
-        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-              <WebhookIcon className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <h2 className="text-white font-semibold">Webhook Settings</h2>
-              <p className="text-zinc-300 text-sm">Required for live meeting detection</p>
+            <div className="space-y-4">
+              <InputField
+                label="SDK Key"
+                name="sdkKey"
+                value={formData.sdkKey}
+                onChange={handleChange}
+                placeholder={savedData.sdkKey ? `Current: ${abbrev(savedData.sdkKey)}` : 'Your SDK Key'}
+              />
+              <InputField
+                label="SDK Secret"
+                name="sdkSecret"
+                value={formData.sdkSecret}
+                onChange={handleChange}
+                placeholder="••••••••••••••••"
+                type="password"
+                hint="Leave blank to keep existing"
+              />
             </div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-4">
-            <p className="text-zinc-300 text-sm mb-2">
-              <strong className="text-white">Webhook URL</strong> (add this to your Zoom app):
-            </p>
-            <code className="block bg-zinc-800 px-3 py-2 rounded-lg text-emerald-400 text-sm break-all">
-              https://whop-zoom-marketplace-app.vercel.app/api/zoom/webhook
-            </code>
+          {/* Meeting Settings */}
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-zinc-700 rounded-xl flex items-center justify-center">
+                <SettingsIcon className="w-5 h-5 text-zinc-400" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold">Meeting Settings</h2>
+                <p className="text-zinc-300 text-sm">Your Zoom meeting configuration</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <InputField
+                label="Meeting ID"
+                name="permanentMeetingId"
+                value={formData.permanentMeetingId}
+                onChange={handleChange}
+                placeholder={savedData.permanentMeetingId ? `Current: ${savedData.permanentMeetingId}` : 'Your Zoom Meeting ID'}
+                hint="Find this in your Zoom app or at zoom.us/meeting"
+              />
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <InputField
-              label="Webhook Secret Token"
-              name="webhookSecretToken"
-              value={formData.webhookSecretToken}
-              onChange={handleChange}
-              placeholder="Your Zoom Webhook Secret Token"
-              type="password"
-              hint="Found in your Zoom app's Event Subscriptions settings. Leave blank to keep existing."
-            />
+          {/* Webhook Settings */}
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                <WebhookIcon className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold">Webhook Settings</h2>
+                <p className="text-zinc-300 text-sm">Required for live meeting detection</p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 mb-4">
+              <p className="text-zinc-400 text-xs mb-2">Webhook URL (add to Zoom app):</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-zinc-800 px-3 py-2 rounded-lg text-emerald-400 text-xs truncate">
+                  {WEBHOOK_URL}
+                </code>
+                <button
+                  type="button"
+                  onClick={copyWebhookUrl}
+                  className="px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg transition-colors flex-shrink-0"
+                >
+                  {copied ? (
+                    <CheckIcon className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <CopyIcon className="w-4 h-4 text-zinc-300" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <InputField
+                label="Webhook Secret Token"
+                name="webhookSecretToken"
+                value={formData.webhookSecretToken}
+                onChange={handleChange}
+                placeholder="••••••••••••••••"
+                type="password"
+                hint="Found in Zoom app's Event Subscriptions. Leave blank to keep existing."
+              />
+            </div>
           </div>
         </div>
 
@@ -284,6 +349,115 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           </button>
         </div>
       </form>
+
+      {/* Notification Settings Modal */}
+      {showNotificationModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                  <BellIcon className="w-5 h-5 text-purple-500" />
+                </div>
+                <div>
+                  <h2 className="text-white font-semibold">Notification Settings</h2>
+                  <p className="text-zinc-400 text-sm">Customize push notifications</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNotificationModal(false)}
+                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                <CloseIcon className="w-5 h-5 text-zinc-400" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Meeting Started */}
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <h3 className="text-white font-medium">Meeting Started</h3>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={notificationSettings.startTitle}
+                      onChange={(e) => setNotificationSettings(prev => ({ ...prev, startTitle: e.target.value }))}
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Body</label>
+                    <input
+                      type="text"
+                      value={notificationSettings.startBody}
+                      onChange={(e) => setNotificationSettings(prev => ({ ...prev, startBody: e.target.value }))}
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Meeting Ended */}
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  <h3 className="text-white font-medium">Meeting Ended</h3>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={notificationSettings.endTitle}
+                      onChange={(e) => setNotificationSettings(prev => ({ ...prev, endTitle: e.target.value }))}
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-400 mb-1">Body</label>
+                    <input
+                      type="text"
+                      value={notificationSettings.endBody}
+                      onChange={(e) => setNotificationSettings(prev => ({ ...prev, endBody: e.target.value }))}
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
+                <p className="text-zinc-400 text-xs">
+                  Notifications will be sent to all users subscribed to this experience when meetings start or end.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNotificationModal(false)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNotificationModal(false)
+                    setMessage({ type: 'success', text: 'Notification settings saved!' })
+                  }}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors"
+                >
+                  Save Notifications
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -349,6 +523,38 @@ function WebhookIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  )
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+  )
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   )
 }

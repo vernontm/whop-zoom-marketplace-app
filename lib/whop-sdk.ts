@@ -61,3 +61,43 @@ export async function verifyUserToken(headersList: Headers): Promise<{ userId: s
     return { userId: null }
   }
 }
+
+// Send push notification to users subscribed to an experience
+export async function sendPushNotification(
+  experienceId: string,
+  title: string,
+  body: string
+): Promise<boolean> {
+  try {
+    const apiKey = process.env.WHOP_API_KEY
+    if (!apiKey) {
+      console.error('WHOP_API_KEY not configured')
+      return false
+    }
+
+    const response = await fetch('https://api.whop.com/api/v5/notifications/push', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        experience_id: experienceId,
+        title,
+        body
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Failed to send push notification:', response.status, errorText)
+      return false
+    }
+
+    console.log('Push notification sent successfully')
+    return true
+  } catch (error) {
+    console.error('Error sending push notification:', error)
+    return false
+  }
+}

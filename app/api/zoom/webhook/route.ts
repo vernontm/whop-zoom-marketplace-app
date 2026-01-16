@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { supabase } from '@/lib/supabase'
 import { getCompanyZoomCredentials } from '@/lib/db'
+import { sendPushNotification } from '@/lib/whop-sdk'
+
+// Get company ID for an account (to send notifications)
+async function getCompanyIdForAccount(accountId: string): Promise<string | null> {
+  if (!supabase) return null
+  
+  try {
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('company_id')
+      .eq('account_id', accountId)
+      .single()
+    
+    if (error || !data) return null
+    return data.company_id
+  } catch {
+    return null
+  }
+}
 
 // Get access token for a Zoom account
 async function getAccessTokenForAccount(accountId: string): Promise<string | null> {
@@ -230,6 +249,16 @@ export async function POST(req: NextRequest) {
           console.error('Error saving meeting status:', error)
         } else {
           console.log('Meeting status saved to database')
+          
+          // Send push notification for meeting started
+          const companyId = await getCompanyIdForAccount(accountId)
+          if (companyId) {
+            await sendPushNotification(
+              companyId,
+              'Meeting Started!',
+              `${topic} is now live. Join now!`
+            )
+          }
         }
       } else {
         console.log('Supabase not configured, cannot save meeting status')
@@ -259,6 +288,16 @@ export async function POST(req: NextRequest) {
           console.error('Error updating meeting status:', error)
         } else {
           console.log('Meeting status updated to ended')
+          
+          // Send push notification for meeting ended
+          const companyId = await getCompanyIdForAccount(accountId)
+          if (companyId) {
+            await sendPushNotification(
+              companyId,
+              'Meeting Ended',
+              `${topic} has ended.`
+            )
+          }
         }
       }
     }
