@@ -56,7 +56,7 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
 
       {/* Main Content */}
       <main className="p-6">
-        {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} />}
+        {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} onNavigateToSettings={() => setActiveTab('settings')} />}
         {activeTab === 'settings' && <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />}
       </main>
     </div>

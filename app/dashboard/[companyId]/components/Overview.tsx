@@ -7,7 +7,11 @@ interface OverviewProps {
   zoomConfig: ZoomConfig
 }
 
-export default function Overview({ companyId, zoomConfig }: OverviewProps) {
+interface OverviewPropsWithNav extends OverviewProps {
+  onNavigateToSettings?: () => void
+}
+
+export default function Overview({ companyId, zoomConfig, onNavigateToSettings }: OverviewPropsWithNav) {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -17,6 +21,31 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
           <p className="text-zinc-500 mt-1">Manage your Zoom meetings</p>
         </div>
       </div>
+
+      {/* Setup Required Banner */}
+      {!zoomConfig.configured && (
+        <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <AlertCircleIcon className="w-6 h-6 text-orange-500" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-white font-bold text-lg mb-1">Setup Required</h2>
+              <p className="text-zinc-300 text-sm mb-4">
+                Configure your Zoom credentials to start using the app. You'll need your Zoom Account ID, Client ID, Client Secret, SDK Key, and SDK Secret.
+              </p>
+              {onNavigateToSettings && (
+                <button
+                  onClick={onNavigateToSettings}
+                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors text-sm"
+                >
+                  Configure Settings →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Single Column Layout */}
       <div className="max-w-2xl">
