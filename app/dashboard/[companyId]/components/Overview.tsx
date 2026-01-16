@@ -120,7 +120,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                   <VideoIcon className={`w-6 h-6 ${liveMeeting ? 'text-emerald-500' : 'text-zinc-500'}`} />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-lg">Meeting Status</h2>
+                  <h2 className="text-white font-bold text-lg">Meeting Status</h2>
                   <p className="text-zinc-500 text-sm">Real-time status</p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                 <ZoomIcon className={`w-6 h-6 ${zoomConfig.configured ? 'text-emerald-500' : 'text-orange-500'}`} />
               </div>
               <div>
-                <h2 className="text-white font-semibold text-lg">Zoom Connection</h2>
+                <h2 className="text-white font-bold text-lg">Zoom Connection</h2>
                 <p className="text-zinc-500 text-sm">API & SDK Status</p>
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
 
           {/* Quick Actions Card */}
           <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-            <h2 className="text-white font-semibold text-lg mb-4">Quick Actions</h2>
+            <h2 className="text-white font-bold text-lg mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => zoomConfig.configured && setShowStartModal(true)}
