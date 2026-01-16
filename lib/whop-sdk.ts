@@ -62,6 +62,32 @@ export async function verifyUserToken(headersList: Headers): Promise<{ userId: s
   }
 }
 
+// Get company ID from an experience ID
+export async function getCompanyIdFromExperience(experienceId: string): Promise<string | null> {
+  // If it's already a company ID, return it
+  if (experienceId.startsWith('biz_')) {
+    return experienceId
+  }
+  
+  // If it's not an experience ID, return null
+  if (!experienceId.startsWith('exp_')) {
+    console.log('Not an experience ID:', experienceId)
+    return null
+  }
+  
+  try {
+    const sdk = getWhopSdk()
+    // Fetch the experience to get its company_id
+    const experience = await sdk.experiences.retrieve(experienceId)
+    const companyId = typeof experience.company === 'string' ? experience.company : experience.company?.id
+    console.log('Experience retrieved:', { id: experience.id, companyId })
+    return companyId || null
+  } catch (error) {
+    console.error('Error fetching experience:', error)
+    return null
+  }
+}
+
 // Send push notification to users subscribed to an experience
 export async function sendPushNotification(
   experienceId: string,

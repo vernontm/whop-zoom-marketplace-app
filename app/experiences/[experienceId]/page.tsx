@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { isCompanyAdmin } from '@/lib/db'
-import { whopsdk, checkUserAccessLevel } from '@/lib/whop-sdk'
+import { whopsdk, checkUserAccessLevel, getCompanyIdFromExperience } from '@/lib/whop-sdk'
 import ExperienceClient from './ExperienceClient'
 
 interface PageProps {
@@ -93,8 +93,17 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
     }
   }
   
-  // Get company ID from headers, or use experienceId as fallback (they're often the same)
-  const companyId = headersList.get('x-whop-company-id') || experienceId
+  // Get company ID from headers, or resolve from experience ID
+  let companyId = headersList.get('x-whop-company-id')
+  
+  // If no company ID from headers, resolve it from the experience ID
+  if (!companyId && experienceId.startsWith('exp_')) {
+    companyId = await getCompanyIdFromExperience(experienceId)
+    console.log('Resolved company ID from experience:', companyId)
+  }
+  
+  // Final fallback to experienceId (for biz_ IDs or if resolution fails)
+  companyId = companyId || experienceId
   
   // Check if user has admin/owner role from Whop headers
   // Whop sends various headers to indicate user role
