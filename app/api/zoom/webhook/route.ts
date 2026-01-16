@@ -1,6 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { supabase } from '@/lib/supabase'
+import { getCompanyZoomCredentials } from '@/lib/db'
+
+// Get access token for a Zoom account
+async function getAccessTokenForAccount(accountId: string): Promise<string | null> {
+  if (!supabase) return null
+  
+  try {
+    // Find company with this account_id
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('company_id, client_id, client_secret, account_id')
+      .eq('account_id', accountId)
+      .single()
+    
+    if (error || !data) return null
+    
+    // Get access token using Server-to-Server OAuth
+    const credentials = Buffer.from(`${data.client_id}:${data.client_secret}`).toString('base64')
+    const tokenResponse = await fetch(
+      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${data.account_id}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    )
+    
+    if (!tokenResponse.ok) return null
+    const tokenData = await tokenResponse.json()
+    return tokenData.access_token
+  } catch {
+    return null
+  }
+}
+
+// Fetch meeting password from Zoom API
+async function getMeetingPassword(accountId: string, meetingId: string): Promise<string> {
+  try {
+    const accessToken = await getAccessTokenForAccount(accountId)
+    if (!accessToken) return ''
+    
+    const response = await fetch(`https://api.zoom.us/v2/meetings/${meetingId}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) return ''
+    
+    const meeting = await response.json()
+    
+    // Try password field first, then extract from join_url
+    if (meeting.password) return meeting.password
+    if (meeting.join_url) {
+      const match = meeting.join_url.match(/[?&]pwd=([^&]+)/)
+      if (match) return match[1]
+    }
+    return ''
+  } catch {
+    return ''
+  }
+}
 
 // Get webhook secret for an account from database
 async function getWebhookSecretForAccount(accountId: string): Promise<string | null> {
@@ -132,13 +197,16 @@ export async function POST(req: NextRequest) {
     const meetingId = String(meetingPayload.id)
     const topic = meetingPayload.topic || 'Meeting'
     const hostId = meetingPayload.host_id
-    const password = meetingPayload.password || ''
     
     console.log(`Meeting event: ${event}, ID: ${meetingId}, Account: ${accountId}`)
     
     // Handle meeting started
     if (event === 'meeting.started') {
       console.log(`Meeting ${meetingId} started`)
+      
+      // Fetch password from Zoom API (webhook doesn't include it)
+      const password = await getMeetingPassword(accountId, meetingId)
+      console.log(`Fetched password for meeting ${meetingId}: ${password ? 'found' : 'not found'}`)
       
       if (supabase) {
         // Upsert meeting status
