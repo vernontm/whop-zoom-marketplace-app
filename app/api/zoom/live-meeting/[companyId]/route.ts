@@ -6,6 +6,10 @@ interface RouteParams {
   params: Promise<{ companyId: string }>
 }
 
+// Disable caching for this endpoint
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(req: Request, { params }: RouteParams) {
   try {
     const { companyId } = await params
