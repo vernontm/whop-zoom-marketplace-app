@@ -28,7 +28,6 @@ export async function generateZoomSignatureForCompany(
 
   const iat = Math.round(Date.now() / 1000) - 30
   const exp = iat + 60 * 60 * 2 // 2 hours
-  const tokenExp = iat + 60 * 60 * 24 // tokenExp must be larger than exp
 
   const oHeader = { alg: 'HS256', typ: 'JWT' }
   const oPayload = {
@@ -38,7 +37,7 @@ export async function generateZoomSignatureForCompany(
     role: role,
     iat: iat,
     exp: exp,
-    tokenExp: tokenExp
+    tokenExp: exp
   }
   
   console.log('Generating signature with:', { 
