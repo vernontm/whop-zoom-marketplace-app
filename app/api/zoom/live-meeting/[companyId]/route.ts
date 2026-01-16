@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getLiveMeetingForCompany } from '@/lib/zoom-api-multi'
+import { getLiveMeetingFromDatabase } from '@/lib/meeting-status'
 
 interface RouteParams {
   params: Promise<{ companyId: string }>
@@ -11,9 +12,25 @@ export async function GET(req: Request, { params }: RouteParams) {
     
     console.log('Checking live meeting for company:', companyId)
     
+    // First check database (populated by webhooks) - most reliable
+    const dbMeeting = await getLiveMeetingFromDatabase(companyId)
+    if (dbMeeting) {
+      console.log('Found live meeting in database:', dbMeeting.id)
+      return NextResponse.json({
+        live: true,
+        source: 'database',
+        meeting: {
+          meetingNumber: dbMeeting.id,
+          password: dbMeeting.password || '',
+          title: dbMeeting.topic
+        }
+      })
+    }
+    
+    // Fallback to Zoom API check
     const liveMeeting = await getLiveMeetingForCompany(companyId)
     
-    console.log('Live meeting result:', liveMeeting)
+    console.log('Live meeting result from API:', liveMeeting)
 
     if (liveMeeting) {
       return NextResponse.json({
