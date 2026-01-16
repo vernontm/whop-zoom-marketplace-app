@@ -42,7 +42,7 @@ export default function Sidebar({ activeTab, setActiveTab, zoomConfigured }: Sid
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                   activeTab === item.id
-                    ? 'bg-emerald-500/10 text-emerald-500'
+                    ? 'bg-emerald-500/10 text-white'
                     : 'text-white hover:bg-zinc-800'
                 }`}
               >
