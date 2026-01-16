@@ -137,11 +137,35 @@ export default function HowTo() {
         </div>
       </div>
 
-      {/* Step 4: Enter Credentials */}
+      {/* Step 4: Get Your Meeting ID */}
       <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
             <span className="text-emerald-500 font-bold">4</span>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-white font-bold text-lg mb-2">Get Your Meeting ID</h2>
+            <p className="text-zinc-300 mb-4">
+              You'll need a Zoom Meeting ID to connect your members to your meeting.
+            </p>
+            <ol className="list-decimal list-inside space-y-3 text-zinc-300 mb-4">
+              <li>Open the <strong className="text-white">Zoom app</strong> or go to <a href="https://zoom.us/meeting" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">zoom.us/meeting</a></li>
+              <li>Click <strong className="text-white">Schedule a Meeting</strong> or use an existing meeting</li>
+              <li>Copy the <strong className="text-white">Meeting ID</strong> (a 9-11 digit number like 123 456 7890)</li>
+            </ol>
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <p className="text-zinc-300 mb-2">Pro tip:</p>
+              <p className="text-zinc-400">Create a <strong className="text-white">recurring meeting</strong> so you can reuse the same Meeting ID for all your sessions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 5: Enter Credentials */}
+      <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-emerald-500 font-bold">5</span>
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg mb-2">Enter Your Credentials</h2>
@@ -162,6 +186,12 @@ export default function HowTo() {
                 <ul className="space-y-2 text-white">
                   <li>• SDK Key</li>
                   <li>• SDK Secret</li>
+                </ul>
+              </div>
+              <div className="border-t border-zinc-800 pt-4">
+                <p className="text-zinc-300 mb-2">Your Meeting:</p>
+                <ul className="space-y-2 text-white">
+                  <li>• Meeting ID</li>
                 </ul>
               </div>
             </div>

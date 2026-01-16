@@ -15,7 +15,6 @@ interface FormData {
   sdkKey: string
   sdkSecret: string
   permanentMeetingId: string
-  defaultMeetingTitle: string
 }
 
 export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
@@ -25,8 +24,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     clientSecret: '',
     sdkKey: '',
     sdkSecret: '',
-    permanentMeetingId: '',
-    defaultMeetingTitle: 'Meeting'
+    permanentMeetingId: ''
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -47,8 +45,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           clientSecret: '',
           sdkKey: data.sdkKey || '',
           sdkSecret: '',
-          permanentMeetingId: data.permanentMeetingId || '',
-          defaultMeetingTitle: data.defaultMeetingTitle || 'Livestream'
+          permanentMeetingId: data.permanentMeetingId || ''
         })
       }
     } catch (error) {
@@ -75,7 +72,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkKey: formData.sdkKey,
           sdkSecret: formData.sdkSecret,
           permanentMeetingId: formData.permanentMeetingId,
-          defaultMeetingTitle: formData.defaultMeetingTitle,
+          defaultMeetingTitle: 'Meeting',
           adminUsernames: [],
           skipValidation: true
         })
@@ -90,7 +87,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           accountId: formData.accountId,
           clientId: formData.clientId,
           sdkKey: formData.sdkKey,
-          defaultMeetingTitle: formData.defaultMeetingTitle,
+          defaultMeetingTitle: 'Meeting',
           adminUsernames: []
         })
         // Clear secrets after save
@@ -204,33 +201,27 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           </div>
         </div>
 
-        {/* Additional Settings */}
+        {/* Meeting Settings */}
         <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-zinc-700 rounded-xl flex items-center justify-center">
               <SettingsIcon className="w-5 h-5 text-zinc-400" />
             </div>
             <div>
-              <h2 className="text-white font-semibold">Additional Settings</h2>
-              <p className="text-zinc-300 text-sm">Optional configuration</p>
+              <h2 className="text-white font-semibold">Meeting Settings</h2>
+              <p className="text-zinc-300 text-sm">Your Zoom meeting configuration</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <InputField
-              label="Default Meeting Title"
-              name="defaultMeetingTitle"
-              value={formData.defaultMeetingTitle}
-              onChange={handleChange}
-              placeholder="Livestream"
-            />
-            <InputField
               label="Meeting ID"
               name="permanentMeetingId"
               value={formData.permanentMeetingId}
               onChange={handleChange}
-              placeholder="Your Zoom Meeting ID"
+              placeholder="Your Zoom Meeting ID (e.g., 123 456 7890)"
               required
+              hint="Find this in your Zoom app or at zoom.us/meeting"
             />
           </div>
         </div>
