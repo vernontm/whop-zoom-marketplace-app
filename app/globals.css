@@ -25,6 +25,17 @@ button, input, optgroup, select, textarea {
   color: #ffffff !important;
 }
 
+h1, h2 {
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #ffffff !important;
+}
+
+.text-zinc-500 {
+  color: #ffffff !important;
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
