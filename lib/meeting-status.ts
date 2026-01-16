@@ -26,38 +26,54 @@ export async function getLiveMeetingFromDatabase(
     return null
   }
   
-  const permanentMeetingId = credentials.permanentMeetingId
-  
-  if (!permanentMeetingId) {
-    console.log('No permanent meeting ID configured')
-    return null
-  }
-  
   if (!supabase) {
     console.log('Supabase not configured, cannot check meeting status from database')
     return null
   }
   
+  const permanentMeetingId = credentials.permanentMeetingId
+  const accountId = credentials.accountId
+  
+  console.log('Checking for live meeting - permanentMeetingId:', permanentMeetingId, 'accountId:', accountId)
+  
   try {
-    // Check if the permanent meeting is currently live
-    const { data, error } = await supabase
-      .from('meeting_status')
-      .select('*')
-      .eq('meeting_id', permanentMeetingId)
-      .eq('status', 'started')
-      .single()
-    
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-      console.error('Error checking meeting status:', error)
-      return null
+    // First try: Check by permanent meeting ID if configured
+    if (permanentMeetingId) {
+      const { data, error } = await supabase
+        .from('meeting_status')
+        .select('*')
+        .eq('meeting_id', permanentMeetingId)
+        .eq('status', 'started')
+        .single()
+      
+      if (!error && data) {
+        console.log('Found live meeting by meeting_id:', data.meeting_id)
+        return {
+          id: data.meeting_id,
+          topic: data.topic || credentials.defaultMeetingTitle || 'Meeting',
+          password: data.password || ''
+        }
+      }
     }
     
-    if (data) {
-      console.log('Found live meeting in database:', data.meeting_id)
-      return {
-        id: data.meeting_id,
-        topic: data.topic || credentials.defaultMeetingTitle || 'Meeting',
-        password: data.password || ''
+    // Second try: Check by account ID for any started meeting
+    if (accountId) {
+      const { data, error } = await supabase
+        .from('meeting_status')
+        .select('*')
+        .eq('account_id', accountId)
+        .eq('status', 'started')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .single()
+      
+      if (!error && data) {
+        console.log('Found live meeting by account_id:', data.meeting_id)
+        return {
+          id: data.meeting_id,
+          topic: data.topic || credentials.defaultMeetingTitle || 'Meeting',
+          password: data.password || ''
+        }
       }
     }
     
