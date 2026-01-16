@@ -16,6 +16,7 @@ interface FormData {
   sdkSecret: string
   permanentMeetingId: string
   defaultMeetingTitle: string
+  brandColor: string
   webhookSecretToken: string
 }
 
@@ -37,6 +38,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     sdkSecret: '',
     permanentMeetingId: '',
     defaultMeetingTitle: '',
+    brandColor: '#5dc6ae',
     webhookSecretToken: ''
   })
   const [saving, setSaving] = useState(false)
@@ -69,6 +71,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkSecret: '',
           permanentMeetingId: data.permanentMeetingId || '',
           defaultMeetingTitle: data.defaultMeetingTitle || '',
+          brandColor: data.brandColor || '#5dc6ae',
           webhookSecretToken: ''
         })
         setSavedData({
@@ -107,6 +110,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           permanentMeetingId: formData.permanentMeetingId,
           webhookSecretToken: formData.webhookSecretToken,
           defaultMeetingTitle: formData.defaultMeetingTitle || 'Zoom Meeting',
+          brandColor: formData.brandColor || '#5dc6ae',
           adminUsernames: [],
           skipValidation: true
         })
@@ -293,6 +297,29 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
                 placeholder="Zoom Meeting"
                 hint="Title shown on the viewer page"
               />
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Brand Color
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    name="brandColor"
+                    value={formData.brandColor}
+                    onChange={handleChange}
+                    className="w-12 h-12 rounded-lg border border-zinc-700 cursor-pointer bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    name="brandColor"
+                    value={formData.brandColor}
+                    onChange={handleChange}
+                    placeholder="#5dc6ae"
+                    className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  />
+                </div>
+                <p className="text-zinc-400 text-xs mt-1">Accent color for the viewer page</p>
+              </div>
             </div>
           </div>
 

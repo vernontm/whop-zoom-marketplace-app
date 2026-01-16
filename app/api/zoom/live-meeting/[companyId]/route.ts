@@ -17,9 +17,10 @@ export async function GET(req: Request, { params }: RouteParams) {
     
     console.log('Checking live meeting for company:', companyId)
     
-    // Get company settings for defaultMeetingTitle
+    // Get company settings for defaultMeetingTitle and brandColor
     const credentials = await getCompanyZoomCredentials(companyId)
     const pageTitle = credentials?.defaultMeetingTitle || 'Zoom Meeting'
+    const brandColor = credentials?.brandColor || '#5dc6ae'
     
     // First check database (populated by webhooks) - most reliable
     const dbMeeting = await getLiveMeetingFromDatabase(companyId)
@@ -29,6 +30,7 @@ export async function GET(req: Request, { params }: RouteParams) {
         live: true,
         source: 'database',
         pageTitle,
+        brandColor,
         meeting: {
           meetingNumber: dbMeeting.id,
           password: dbMeeting.password || '',
@@ -44,6 +46,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({
         live: false,
         pageTitle,
+        brandColor,
         meeting: null,
         debug: { companyId, reason: 'recently_ended' }
       })
@@ -58,6 +61,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({
         live: true,
         pageTitle,
+        brandColor,
         meeting: {
           meetingNumber: liveMeeting.id,
           password: liveMeeting.password || '',
@@ -69,6 +73,7 @@ export async function GET(req: Request, { params }: RouteParams) {
     return NextResponse.json({
       live: false,
       pageTitle,
+      brandColor,
       meeting: null,
       debug: { companyId }
     })

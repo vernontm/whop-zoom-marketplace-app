@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
       sdkKey: maskString(credentials.sdkKey),
       permanentMeetingId: credentials.permanentMeetingId || '',
       defaultMeetingTitle: credentials.defaultMeetingTitle || 'Meeting',
+      brandColor: credentials.brandColor || '#5dc6ae',
       notificationSettings: credentials.notificationSettings || null,
       updatedAt: credentials.updatedAt
     })
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, webhookSecretToken, notificationSettings, skipValidation } = body
+    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, brandColor, webhookSecretToken, notificationSettings, skipValidation } = body
 
     // Get existing credentials to merge with new values
     const existingCredentials = await getCompanyZoomCredentials(companyId)
@@ -147,6 +148,7 @@ export async function POST(req: NextRequest) {
       sdkSecret: sdkSecret?.trim() || existingCredentials?.sdkSecret || '',
       permanentMeetingId: permanentMeetingId?.trim() || existingCredentials?.permanentMeetingId || undefined,
       defaultMeetingTitle: defaultMeetingTitle?.trim() || existingCredentials?.defaultMeetingTitle || 'Meeting',
+      brandColor: brandColor?.trim() || existingCredentials?.brandColor || '#5dc6ae',
       webhookSecretToken: webhookSecretToken?.trim() || existingCredentials?.webhookSecretToken || undefined,
       notificationSettings: notificationSettings || existingCredentials?.notificationSettings || undefined
     }
