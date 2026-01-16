@@ -70,6 +70,15 @@ async function getZoomAccessToken(companyId: string): Promise<string> {
 export async function getCompanySdkCredentials(companyId: string): Promise<{ sdkKey: string; sdkSecret: string } | null> {
   const credentials = await getCompanyZoomCredentials(companyId)
   if (!credentials) return null
+  
+  console.log('SDK credentials for company:', companyId, {
+    sdkKey: credentials.sdkKey,
+    sdkKeyLength: credentials.sdkKey?.length,
+    sdkSecretFirst4: credentials.sdkSecret?.substring(0, 4),
+    sdkSecretLength: credentials.sdkSecret?.length,
+    hasSdkSecret: !!credentials.sdkSecret
+  })
+  
   return {
     sdkKey: credentials.sdkKey,
     sdkSecret: credentials.sdkSecret
