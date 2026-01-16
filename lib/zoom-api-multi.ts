@@ -141,7 +141,7 @@ export async function endMeetingForCompany(companyId: string, meetingId: string)
 
 /**
  * Get live meeting for a company
- * Checks /users/me/meetings?type=live first, then all users if needed
+ * First checks if the permanent meeting is in "started" status, then falls back to listing live meetings
  */
 export async function getLiveMeetingForCompany(
   companyId: string
@@ -162,7 +162,36 @@ export async function getLiveMeetingForCompany(
   console.log('Permanent meeting ID:', permanentMeetingId)
 
   try {
-    // First try /users/me/meetings?type=live
+    // If we have a permanent meeting ID, check its status directly first
+    if (permanentMeetingId) {
+      console.log('Checking permanent meeting status directly...')
+      const meetingResponse = await fetch(`https://api.zoom.us/v2/meetings/${permanentMeetingId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (meetingResponse.ok) {
+        const meetingData = await meetingResponse.json()
+        console.log('Permanent meeting status:', meetingData.status, 'topic:', meetingData.topic)
+        
+        // If meeting is in "started" status, it's live
+        if (meetingData.status === 'started') {
+          console.log('Permanent meeting is LIVE!')
+          return {
+            id: permanentMeetingId,
+            topic: meetingData.topic || credentials.defaultMeetingTitle || 'Meeting',
+            password: meetingData.password || meetingData.encrypted_password || ''
+          }
+        }
+      } else {
+        console.log('Failed to get permanent meeting status:', meetingResponse.status)
+      }
+    }
+
+    // Fallback: try /users/me/meetings?type=live
     console.log('Fetching live meetings from /users/me...')
     const liveResponse = await fetch('https://api.zoom.us/v2/users/me/meetings?type=live', {
       method: 'GET',
