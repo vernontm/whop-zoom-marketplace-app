@@ -86,6 +86,38 @@ export async function getLiveMeetingFromDatabase(
 }
 
 /**
+ * Check if there's a recently ended meeting (within last hour)
+ * Used to determine if we should skip API fallback
+ */
+export async function hasRecentlyEndedMeeting(companyId: string): Promise<boolean> {
+  const credentials = await getCompanyZoomCredentials(companyId)
+  if (!credentials || !supabase) return false
+  
+  const accountId = credentials.accountId
+  if (!accountId) return false
+  
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    
+    const { data, error } = await supabase
+      .from('meeting_status')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('status', 'ended')
+      .gte('ended_at', oneHourAgo)
+      .limit(1)
+    
+    if (!error && data && data.length > 0) {
+      console.log('Found recently ended meeting, skipping API fallback')
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
+/**
  * Update meeting status in database (called by webhook)
  */
 export async function updateMeetingStatus(

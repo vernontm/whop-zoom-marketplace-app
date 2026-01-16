@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getLiveMeetingForCompany } from '@/lib/zoom-api-multi'
-import { getLiveMeetingFromDatabase } from '@/lib/meeting-status'
+import { getLiveMeetingFromDatabase, hasRecentlyEndedMeeting } from '@/lib/meeting-status'
 
 interface RouteParams {
   params: Promise<{ companyId: string }>
@@ -31,7 +31,18 @@ export async function GET(req: Request, { params }: RouteParams) {
       })
     }
     
-    // Fallback to Zoom API check
+    // Check if there's a recently ended meeting - if so, trust the database and skip API
+    const recentlyEnded = await hasRecentlyEndedMeeting(companyId)
+    if (recentlyEnded) {
+      console.log('Recently ended meeting found, not falling back to API')
+      return NextResponse.json({
+        live: false,
+        meeting: null,
+        debug: { companyId, reason: 'recently_ended' }
+      })
+    }
+    
+    // Fallback to Zoom API check (only if no recent webhook data)
     const liveMeeting = await getLiveMeetingForCompany(companyId)
     
     console.log('Live meeting result from API:', liveMeeting)
