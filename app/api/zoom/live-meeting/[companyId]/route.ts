@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getLiveMeetingForCompany } from '@/lib/zoom-api-multi'
 import { getLiveMeetingFromDatabase, hasRecentlyEndedMeeting } from '@/lib/meeting-status'
+import { getCompanyZoomCredentials } from '@/lib/db'
 
 interface RouteParams {
   params: Promise<{ companyId: string }>
@@ -16,6 +17,10 @@ export async function GET(req: Request, { params }: RouteParams) {
     
     console.log('Checking live meeting for company:', companyId)
     
+    // Get company settings for defaultMeetingTitle
+    const credentials = await getCompanyZoomCredentials(companyId)
+    const pageTitle = credentials?.defaultMeetingTitle || 'Zoom Meeting'
+    
     // First check database (populated by webhooks) - most reliable
     const dbMeeting = await getLiveMeetingFromDatabase(companyId)
     if (dbMeeting) {
@@ -23,6 +28,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({
         live: true,
         source: 'database',
+        pageTitle,
         meeting: {
           meetingNumber: dbMeeting.id,
           password: dbMeeting.password || '',
@@ -37,6 +43,7 @@ export async function GET(req: Request, { params }: RouteParams) {
       console.log('Recently ended meeting found, not falling back to API')
       return NextResponse.json({
         live: false,
+        pageTitle,
         meeting: null,
         debug: { companyId, reason: 'recently_ended' }
       })
@@ -50,6 +57,7 @@ export async function GET(req: Request, { params }: RouteParams) {
     if (liveMeeting) {
       return NextResponse.json({
         live: true,
+        pageTitle,
         meeting: {
           meetingNumber: liveMeeting.id,
           password: liveMeeting.password || '',
@@ -60,6 +68,7 @@ export async function GET(req: Request, { params }: RouteParams) {
 
     return NextResponse.json({
       live: false,
+      pageTitle,
       meeting: null,
       debug: { companyId }
     })

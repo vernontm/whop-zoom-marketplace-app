@@ -17,11 +17,10 @@ interface ExperienceClientProps {
   user: User
 }
 
-const MEETING_TITLE = 'Zoom Meeting'
-
 export default function ExperienceClient({ experienceId, companyId, user }: ExperienceClientProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [pageTitle, setPageTitle] = useState('Zoom Meeting')
   const [liveMeeting, setLiveMeeting] = useState<{
     meetingNumber: string
     password: string
@@ -34,11 +33,16 @@ export default function ExperienceClient({ experienceId, companyId, user }: Expe
         const response = await fetch(`/api/zoom/live-meeting/${companyId}`)
         const data = await response.json()
         
+        // Update page title from API response
+        if (data.pageTitle) {
+          setPageTitle(data.pageTitle)
+        }
+        
         if (data.live && data.meeting) {
           setLiveMeeting({
             meetingNumber: data.meeting.meetingNumber,
             password: data.meeting.password || '',
-            title: MEETING_TITLE
+            title: data.pageTitle || 'Zoom Meeting'
           })
         } else {
           setLiveMeeting(null)
@@ -99,7 +103,7 @@ export default function ExperienceClient({ experienceId, companyId, user }: Expe
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-white mb-2">{MEETING_TITLE}</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">{pageTitle}</h1>
           
           {/* Subtitle */}
           <p className="text-zinc-400 text-lg mb-6">
@@ -152,7 +156,7 @@ export default function ExperienceClient({ experienceId, companyId, user }: Expe
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ color: '#ffffff' }}>{MEETING_TITLE}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ color: '#ffffff' }}>{pageTitle}</h1>
         
         {/* Description */}
         <p className="text-zinc-400 text-xl mb-8">

@@ -15,6 +15,7 @@ interface FormData {
   sdkKey: string
   sdkSecret: string
   permanentMeetingId: string
+  defaultMeetingTitle: string
   webhookSecretToken: string
 }
 
@@ -35,6 +36,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     sdkKey: '',
     sdkSecret: '',
     permanentMeetingId: '',
+    defaultMeetingTitle: '',
     webhookSecretToken: ''
   })
   const [saving, setSaving] = useState(false)
@@ -66,6 +68,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkKey: data.sdkKey || '',
           sdkSecret: '',
           permanentMeetingId: data.permanentMeetingId || '',
+          defaultMeetingTitle: data.defaultMeetingTitle || '',
           webhookSecretToken: ''
         })
         setSavedData({
@@ -103,7 +106,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkSecret: formData.sdkSecret,
           permanentMeetingId: formData.permanentMeetingId,
           webhookSecretToken: formData.webhookSecretToken,
-          defaultMeetingTitle: 'Meeting',
+          defaultMeetingTitle: formData.defaultMeetingTitle || 'Zoom Meeting',
           adminUsernames: [],
           skipValidation: true
         })
@@ -118,7 +121,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           accountId: formData.accountId,
           clientId: formData.clientId,
           sdkKey: formData.sdkKey,
-          defaultMeetingTitle: 'Meeting',
+          defaultMeetingTitle: formData.defaultMeetingTitle || 'Zoom Meeting',
           adminUsernames: []
         })
         // Clear secrets after save and update saved data
@@ -281,6 +284,14 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
                 onChange={handleChange}
                 placeholder={savedData.permanentMeetingId ? `Current: ${savedData.permanentMeetingId}` : 'Your Zoom Meeting ID'}
                 hint="Find this in your Zoom app or at zoom.us/meeting"
+              />
+              <InputField
+                label="Page Title"
+                name="defaultMeetingTitle"
+                value={formData.defaultMeetingTitle}
+                onChange={handleChange}
+                placeholder="Zoom Meeting"
+                hint="Title shown on the viewer page"
               />
             </div>
           </div>
