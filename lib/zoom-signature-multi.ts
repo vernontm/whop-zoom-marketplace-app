@@ -40,8 +40,16 @@ export async function generateZoomSignatureForCompany(
     tokenExp: exp
   }
   
+  // Check if credentials look valid (not masked)
+  const isMasked = (val: string) => val?.includes('••••') || val?.includes('****')
+  if (isMasked(sdkKey) || isMasked(sdkSecret)) {
+    console.error('ERROR: Credentials appear to be masked! sdkKey:', sdkKey, 'sdkSecret:', sdkSecret?.substring(0, 10))
+    throw new Error('Zoom SDK credentials are corrupted (masked values). Please re-enter your credentials in Settings.')
+  }
+  
   console.log('Generating signature with:', { 
     sdkKey: sdkKey,
+    sdkKeyLength: sdkKey?.length,
     sdkSecretFirst4: sdkSecret?.substring(0, 4),
     sdkSecretLast4: sdkSecret?.substring(sdkSecret.length - 4),
     sdkSecretLength: sdkSecret?.length,
