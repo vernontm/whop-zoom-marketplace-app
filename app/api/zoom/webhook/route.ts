@@ -20,6 +20,39 @@ async function getWebhookSecretForAccount(accountId: string): Promise<string | n
   }
 }
 
+// Get all webhook secrets for URL validation (since account_id isn't provided)
+async function getAllWebhookSecrets(): Promise<string[]> {
+  if (!supabase) return []
+  
+  try {
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('webhook_secret_token')
+      .not('webhook_secret_token', 'is', null)
+    
+    if (error || !data) return []
+    return data.map(d => d.webhook_secret_token).filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
+// Try to validate with any stored secret (for URL validation where account_id isn't provided)
+async function tryValidateWithAnySecret(plainToken: string): Promise<{ plainToken: string; encryptedToken: string } | null> {
+  const secrets = await getAllWebhookSecrets()
+  
+  if (secrets.length === 0) {
+    console.log('No webhook secrets stored yet')
+    return null
+  }
+  
+  // Use the first secret found - admin should save their secret before validating
+  const secret = secrets[0]
+  const encryptedToken = crypto.createHmac('sha256', secret).update(plainToken).digest('hex')
+  
+  return { plainToken, encryptedToken }
+}
+
 // Verify Zoom webhook signature with account-specific secret
 function verifyZoomWebhook(payload: string, signature: string, timestamp: string, secret: string): boolean {
   if (!secret) {
@@ -62,9 +95,21 @@ export async function POST(req: NextRequest) {
     
     // Handle URL validation (required by Zoom when setting up webhooks)
     if (body.event === 'endpoint.url_validation') {
-      console.log('Handling URL validation challenge for account:', accountId)
-      const response = handleUrlValidation(body.payload.plainToken, webhookSecret)
-      return NextResponse.json(response)
+      console.log('Handling URL validation challenge')
+      
+      // URL validation doesn't include account_id, so try with any stored secret
+      const response = await tryValidateWithAnySecret(body.payload.plainToken)
+      
+      if (response) {
+        console.log('URL validation response generated successfully')
+        return NextResponse.json(response)
+      } else {
+        // No secrets stored yet - tell admin to save secret first
+        console.error('No webhook secrets stored - admin must save secret in Settings first')
+        return NextResponse.json({ 
+          error: 'Please save your Webhook Secret Token in Settings before validating' 
+        }, { status: 400 })
+      }
     }
     
     // Verify webhook signature for other events
