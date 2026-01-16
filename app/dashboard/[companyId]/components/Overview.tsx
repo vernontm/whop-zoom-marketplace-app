@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { ZoomConfig } from '../DashboardClient'
 
 interface OverviewProps {
@@ -8,78 +7,7 @@ interface OverviewProps {
   zoomConfig: ZoomConfig
 }
 
-interface LiveMeeting {
-  meetingNumber: string
-  password: string
-  title: string
-}
-
 export default function Overview({ companyId, zoomConfig }: OverviewProps) {
-  const [liveMeeting, setLiveMeeting] = useState<LiveMeeting | null>(null)
-  const [isStarting, setIsStarting] = useState(false)
-  const [checkingLive, setCheckingLive] = useState(true)
-  const [showStartModal, setShowStartModal] = useState(false)
-  const [meetingTitle, setMeetingTitle] = useState('')
-
-  useEffect(() => {
-    checkLiveMeeting()
-    const interval = setInterval(checkLiveMeeting, 10000)
-    return () => clearInterval(interval)
-  }, [companyId])
-
-  useEffect(() => {
-    setMeetingTitle(getDefaultTitle())
-  }, [])
-
-  const checkLiveMeeting = async () => {
-    try {
-      const response = await fetch(`/api/zoom/live-meeting/${companyId}`)
-      const data = await response.json()
-      if (data.live && data.meeting) {
-        setLiveMeeting(data.meeting)
-      } else {
-        setLiveMeeting(null)
-      }
-    } catch (error) {
-      console.error('Error checking live meeting:', error)
-    } finally {
-      setCheckingLive(false)
-    }
-  }
-
-  const startMeeting = async () => {
-    setIsStarting(true)
-    try {
-      const response = await fetch(`/api/zoom/create-meeting/${companyId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: meetingTitle || getDefaultTitle() })
-      })
-      const data = await response.json()
-      if (data.success) {
-        setLiveMeeting({
-          meetingNumber: data.meeting.meetingNumber,
-          password: data.meeting.password,
-          title: data.meeting.title
-        })
-        setShowStartModal(false)
-      }
-    } catch (error) {
-      console.error('Error starting meeting:', error)
-    } finally {
-      setIsStarting(false)
-    }
-  }
-
-  const getDefaultTitle = () => {
-    const today = new Date()
-    const month = String(today.getMonth() + 1).padStart(2, '0')
-    const day = String(today.getDate()).padStart(2, '0')
-    const year = today.getFullYear()
-    return `Meeting ${month}-${day}-${year}`
-  }
-
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -88,185 +16,52 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-zinc-500 mt-1">Manage your Zoom meetings</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-zinc-500 bg-zinc-900 px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            Live
-          </div>
-        </div>
       </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Live Status Card - Large */}
-          <div className={`rounded-2xl p-6 border ${liveMeeting ? 'bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/20' : 'bg-[#151515] border-zinc-800'}`}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${liveMeeting ? 'bg-emerald-500/20' : 'bg-zinc-800'}`}>
-                  <VideoIcon className={`w-6 h-6 ${liveMeeting ? 'text-emerald-500' : 'text-zinc-500'}`} />
-                </div>
-                <div>
-                  <h2 className="text-white font-bold text-lg">Meeting Status</h2>
-                  <p className="text-zinc-500 text-sm">Real-time status</p>
-                </div>
-              </div>
-              {liveMeeting ? (
-                <span className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-500 text-sm font-semibold rounded-full">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                  LIVE NOW
+      {/* Single Column Layout */}
+      <div className="max-w-2xl">
+        {/* Connection Status Card */}
+        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${zoomConfig.configured ? 'bg-emerald-500/10' : 'bg-orange-500/10'}`}>
+              <ZoomIcon className={`w-6 h-6 ${zoomConfig.configured ? 'text-emerald-500' : 'text-orange-500'}`} />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-lg">Zoom Connection</h2>
+              <p className="text-zinc-500 text-sm">API & SDK Status</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-3 border-b border-zinc-800">
+              <span className="text-zinc-400">API Status</span>
+              {zoomConfig.configured ? (
+                <span className="flex items-center gap-2 text-emerald-500 text-sm font-medium">
+                  <CheckCircleIcon className="w-4 h-4" />
+                  Connected
                 </span>
               ) : (
-                <span className="px-3 py-1.5 bg-zinc-800 text-zinc-500 text-sm font-medium rounded-full">
-                  OFFLINE
+                <span className="flex items-center gap-2 text-orange-500 text-sm font-medium">
+                  <AlertCircleIcon className="w-4 h-4" />
+                  Not Configured
                 </span>
               )}
             </div>
-
-            {liveMeeting ? (
-              <div className="space-y-4">
-                <div className="bg-black/20 rounded-xl p-4">
-                  <p className="text-white font-semibold text-xl mb-1">{liveMeeting.title}</p>
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
-                    <span className="flex items-center gap-1.5">
-                      <HashIcon className="w-4 h-4" />
-                      {liveMeeting.meetingNumber}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <LockIcon className="w-4 h-4" />
-                      {liveMeeting.password}
-                    </span>
-                  </div>
-                </div>
-                <a
-                  href={`/meeting/live?meetingNumber=${liveMeeting.meetingNumber}&password=${liveMeeting.password}&title=${encodeURIComponent(liveMeeting.title)}&host=1&companyId=${companyId}`}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  <PlayIcon className="w-5 h-5" />
-                  Join Meeting
-                </a>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-zinc-400">No active meeting. Start one to begin.</p>
-                {zoomConfig.configured ? (
-                  <button
-                    onClick={() => setShowStartModal(true)}
-                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <PlayIcon className="w-5 h-5" />
-                    Start New Meeting
-                  </button>
-                ) : (
-                  <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
-                    <p className="text-orange-400 text-sm">Configure Zoom in Settings to start meetings</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Connection Status Card */}
-          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${zoomConfig.configured ? 'bg-emerald-500/10' : 'bg-orange-500/10'}`}>
-                <ZoomIcon className={`w-6 h-6 ${zoomConfig.configured ? 'text-emerald-500' : 'text-orange-500'}`} />
-              </div>
-              <div>
-                <h2 className="text-white font-bold text-lg">Zoom Connection</h2>
-                <p className="text-zinc-500 text-sm">API & SDK Status</p>
-              </div>
+            <div className="flex items-center justify-between py-3 border-b border-zinc-800">
+              <span className="text-zinc-400">SDK Key</span>
+              <span className="text-white font-mono text-sm">
+                {zoomConfig.sdkKey ? `${zoomConfig.sdkKey.slice(0, 8)}...` : '—'}
+              </span>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-zinc-800">
-                <span className="text-zinc-400">API Status</span>
-                {zoomConfig.configured ? (
-                  <span className="flex items-center gap-2 text-emerald-500 text-sm font-medium">
-                    <CheckCircleIcon className="w-4 h-4" />
-                    Connected
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2 text-orange-500 text-sm font-medium">
-                    <AlertCircleIcon className="w-4 h-4" />
-                    Not Configured
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-zinc-800">
-                <span className="text-zinc-400">SDK Key</span>
-                <span className="text-white font-mono text-sm">
-                  {zoomConfig.sdkKey ? `${zoomConfig.sdkKey.slice(0, 8)}...` : '—'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-zinc-400">Account ID</span>
-                <span className="text-white font-mono text-sm">
-                  {zoomConfig.accountId || '—'}
-                </span>
-              </div>
+            <div className="flex items-center justify-between py-3">
+              <span className="text-zinc-400">Account ID</span>
+              <span className="text-white font-mono text-sm">
+                {zoomConfig.accountId || '—'}
+              </span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Start Meeting Modal */}
-      {showStartModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Start New Meeting</h2>
-              <button
-                onClick={() => setShowStartModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                <XIcon className="w-5 h-5 text-zinc-400" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Meeting Title</label>
-                <input
-                  type="text"
-                  value={meetingTitle}
-                  onChange={(e) => setMeetingTitle(e.target.value)}
-                  placeholder="Enter meeting title..."
-                  className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setShowStartModal(false)}
-                  className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={startMeeting}
-                  disabled={isStarting}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {isStarting ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                      Starting...
-                    </>
-                  ) : (
-                    <>
-                      <PlayIcon className="w-5 h-5" />
-                      Start Meeting
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
