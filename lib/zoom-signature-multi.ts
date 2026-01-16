@@ -1,5 +1,5 @@
 // Multi-tenant Zoom signature generation
-import { KJUR } from 'jsrsasign'
+import jwt from 'jsonwebtoken'
 import { getCompanySdkCredentials } from './zoom-api-multi'
 
 interface SignatureRequest {
@@ -9,6 +9,7 @@ interface SignatureRequest {
 
 /**
  * Generate Zoom SDK signature for a specific company
+ * Using jsonwebtoken library for reliable JWT generation
  */
 export async function generateZoomSignatureForCompany(
   companyId: string,
@@ -22,15 +23,15 @@ export async function generateZoomSignatureForCompany(
 
   const { sdkKey, sdkSecret } = credentials
 
-  // Remove any spaces or dashes from meeting number and convert to number
-  const cleanMeetingNumber = parseInt(meetingNumber.replace(/[\s-]/g, ''), 10)
+  // Remove any spaces or dashes from meeting number
+  const cleanMeetingNumber = meetingNumber.replace(/[\s-]/g, '')
 
   const iat = Math.round(Date.now() / 1000) - 30
   const exp = iat + 60 * 60 * 2 // 2 hours
 
-  const oHeader = { alg: 'HS256', typ: 'JWT' }
-  const oPayload = {
+  const payload = {
     appKey: sdkKey,
+    sdkKey: sdkKey,
     mn: cleanMeetingNumber,
     role: role,
     iat: iat,
@@ -49,11 +50,11 @@ export async function generateZoomSignatureForCompany(
     exp
   })
 
-  const sHeader = JSON.stringify(oHeader)
-  const sPayload = JSON.stringify(oPayload)
-  
-  // Use the same signing approach as the working repo
-  const signature = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, sdkSecret)
+  // Use jsonwebtoken for reliable signing
+  const signature = jwt.sign(payload, sdkSecret, {
+    algorithm: 'HS256',
+    header: { alg: 'HS256', typ: 'JWT' }
+  })
   
   console.log('Generated signature length:', signature.length)
   
