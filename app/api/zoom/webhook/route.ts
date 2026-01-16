@@ -22,6 +22,24 @@ async function getCompanyIdForAccount(accountId: string): Promise<string | null>
   }
 }
 
+// Get notification settings for an account
+async function getNotificationSettingsForAccount(accountId: string): Promise<{ startTitle: string; startBody: string; endTitle: string; endBody: string } | null> {
+  if (!supabase) return null
+  
+  try {
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('notification_settings')
+      .eq('account_id', accountId)
+      .single()
+    
+    if (error || !data || !data.notification_settings) return null
+    return data.notification_settings
+  } catch {
+    return null
+  }
+}
+
 // Get access token for a Zoom account
 async function getAccessTokenForAccount(accountId: string): Promise<string | null> {
   if (!supabase) return null
@@ -253,10 +271,12 @@ export async function POST(req: NextRequest) {
           // Send push notification for meeting started
           const companyId = await getCompanyIdForAccount(accountId)
           if (companyId) {
+            // Get notification settings from database
+            const notifSettings = await getNotificationSettingsForAccount(accountId)
             await sendPushNotification(
               companyId,
-              'Meeting Started!',
-              `${topic} is now live. Join now!`
+              notifSettings?.startTitle || 'Meeting Started!',
+              notifSettings?.startBody?.replace('{topic}', topic) || `${topic} is now live. Join now!`
             )
           }
         }
@@ -292,10 +312,11 @@ export async function POST(req: NextRequest) {
           // Send push notification for meeting ended
           const companyId = await getCompanyIdForAccount(accountId)
           if (companyId) {
+            const notifSettings = await getNotificationSettingsForAccount(accountId)
             await sendPushNotification(
               companyId,
-              'Meeting Ended',
-              `${topic} has ended.`
+              notifSettings?.endTitle || 'Meeting Ended',
+              notifSettings?.endBody?.replace('{topic}', topic) || `${topic} has ended.`
             )
           }
         }

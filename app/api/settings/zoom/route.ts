@@ -66,16 +66,13 @@ export async function GET(req: NextRequest) {
     // Return masked credentials for display
     return NextResponse.json({
       configured: true,
-      credentials: {
-        accountId: maskString(credentials.accountId),
-        clientId: maskString(credentials.clientId),
-        clientSecret: '••••••••••••',
-        sdkKey: maskString(credentials.sdkKey),
-        sdkSecret: '••••••••••••',
-        permanentMeetingId: credentials.permanentMeetingId || '',
-        defaultMeetingTitle: credentials.defaultMeetingTitle || 'Meeting',
-        updatedAt: credentials.updatedAt
-      }
+      accountId: maskString(credentials.accountId),
+      clientId: maskString(credentials.clientId),
+      sdkKey: maskString(credentials.sdkKey),
+      permanentMeetingId: credentials.permanentMeetingId || '',
+      defaultMeetingTitle: credentials.defaultMeetingTitle || 'Meeting',
+      notificationSettings: credentials.notificationSettings || null,
+      updatedAt: credentials.updatedAt
     })
   } catch (error) {
     console.error('Error fetching Zoom settings:', error)
@@ -123,7 +120,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, webhookSecretToken, skipValidation } = body
+    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, webhookSecretToken, notificationSettings, skipValidation } = body
 
     // Get existing credentials to merge with new values
     const existingCredentials = await getCompanyZoomCredentials(companyId)
@@ -150,7 +147,8 @@ export async function POST(req: NextRequest) {
       sdkSecret: sdkSecret?.trim() || existingCredentials?.sdkSecret || '',
       permanentMeetingId: permanentMeetingId?.trim() || existingCredentials?.permanentMeetingId || undefined,
       defaultMeetingTitle: defaultMeetingTitle?.trim() || existingCredentials?.defaultMeetingTitle || 'Meeting',
-      webhookSecretToken: webhookSecretToken?.trim() || existingCredentials?.webhookSecretToken || undefined
+      webhookSecretToken: webhookSecretToken?.trim() || existingCredentials?.webhookSecretToken || undefined,
+      notificationSettings: notificationSettings || existingCredentials?.notificationSettings || undefined
     }
 
     // Validate that we have all required fields after merge

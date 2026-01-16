@@ -3,6 +3,13 @@
 
 import { supabase, CompanyZoomSettings } from './supabase'
 
+export interface NotificationSettings {
+  startTitle: string
+  startBody: string
+  endTitle: string
+  endBody: string
+}
+
 export interface ZoomCredentials {
   accountId: string
   clientId: string
@@ -12,6 +19,7 @@ export interface ZoomCredentials {
   permanentMeetingId?: string
   defaultMeetingTitle?: string
   webhookSecretToken?: string
+  notificationSettings?: NotificationSettings
   updatedAt: string
 }
 
@@ -64,6 +72,7 @@ export async function getCompanyZoomCredentials(companyId: string): Promise<Zoom
           permanentMeetingId: data.permanent_meeting_id,
           defaultMeetingTitle: data.default_meeting_title || 'Meeting',
           webhookSecretToken: data.webhook_secret_token,
+          notificationSettings: data.notification_settings || undefined,
           updatedAt: data.updated_at
         }
         
@@ -174,6 +183,7 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
         permanentMeetingId: data.permanent_meeting_id,
         defaultMeetingTitle: data.default_meeting_title || 'Meeting',
         webhookSecretToken: data.webhook_secret_token,
+        notificationSettings: data.notification_settings || undefined,
         updatedAt: data.updated_at
       },
       adminUsernames: data.admin_usernames || [],
@@ -206,6 +216,7 @@ export async function saveCompanySettings(companyId: string, settings: CompanySe
       permanent_meeting_id: settings.zoomCredentials?.permanentMeetingId?.replace(/\s/g, ''),
       default_meeting_title: settings.zoomCredentials?.defaultMeetingTitle || 'Livestream',
       webhook_secret_token: settings.zoomCredentials?.webhookSecretToken,
+      notification_settings: settings.zoomCredentials?.notificationSettings,
       admin_usernames: settings.adminUsernames || [],
       updated_at: new Date().toISOString()
     }

@@ -74,6 +74,9 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkKey: data.sdkKey || '',
           permanentMeetingId: data.permanentMeetingId || ''
         })
+        if (data.notificationSettings) {
+          setNotificationSettings(data.notificationSettings)
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error)
@@ -445,9 +448,26 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowNotificationModal(false)
-                    setMessage({ type: 'success', text: 'Notification settings saved!' })
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/settings/zoom?companyId=${companyId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          companyId,
+                          notificationSettings,
+                          skipValidation: true
+                        })
+                      })
+                      if (response.ok) {
+                        setShowNotificationModal(false)
+                        setMessage({ type: 'success', text: 'Notification settings saved!' })
+                      } else {
+                        setMessage({ type: 'error', text: 'Failed to save notification settings' })
+                      }
+                    } catch {
+                      setMessage({ type: 'error', text: 'Failed to save notification settings' })
+                    }
                   }}
                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors"
                 >
