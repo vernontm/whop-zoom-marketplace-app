@@ -35,7 +35,7 @@ export default function Meetings({ companyId }: MeetingsProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Meetings</h1>
-          <p className="text-zinc-500 mt-1">View and manage your livestreams</p>
+          <p className="text-zinc-500 mt-1">View and manage your meetings</p>
         </div>
         <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2">
           <PlusIcon className="w-5 h-5" />
@@ -111,7 +111,7 @@ export default function Meetings({ companyId }: MeetingsProps) {
             </div>
             <h3 className="text-white font-semibold mb-1">No meetings yet</h3>
             <p className="text-zinc-500 text-sm max-w-sm">
-              Start your first livestream to see it here. Meeting history will be tracked automatically.
+              Start your first meeting to see it here. Meeting history will be tracked automatically.
             </p>
           </div>
         )}
@@ -122,7 +122,7 @@ export default function Meetings({ companyId }: MeetingsProps) {
         <InfoIcon className="w-5 h-5 text-zinc-500 mt-0.5" />
         <div>
           <p className="text-zinc-400 text-sm">
-            Meeting history is tracked automatically when you start livestreams. Past meetings will appear here with duration and viewer stats.
+            Meeting history is tracked automatically when you start meetings. Past meetings will appear here with duration and viewer stats.
           </p>
         </div>
       </div>

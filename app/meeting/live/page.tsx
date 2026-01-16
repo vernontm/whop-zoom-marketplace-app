@@ -20,7 +20,7 @@ function LiveMeetingContent() {
   
   const meetingNumber = searchParams.get('meetingNumber') || ''
   const password = searchParams.get('password') || ''
-  const title = searchParams.get('title') || 'Livestream'
+  const title = searchParams.get('title') || 'Meeting'
   const usernameFromUrl = searchParams.get('username') || ''
   const isHost = searchParams.get('host') === '1'
   const companyId = searchParams.get('companyId') || 'dev-company'

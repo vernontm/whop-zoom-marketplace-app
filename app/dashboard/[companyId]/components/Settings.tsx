@@ -27,7 +27,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     sdkKey: '',
     sdkSecret: '',
     permanentMeetingId: '',
-    defaultMeetingTitle: 'Livestream',
+    defaultMeetingTitle: 'Meeting',
     adminUsernames: ''
   })
   const [saving, setSaving] = useState(false)

@@ -40,7 +40,7 @@ export default async function DashboardPage({ params }: PageProps) {
   }
   
   // Fetch initial config server-side
-  let zoomConfig = { configured: false, accountId: '', clientId: '', sdkKey: '', defaultMeetingTitle: 'Livestream' }
+  let zoomConfig = { configured: false, accountId: '', clientId: '', sdkKey: '', defaultMeetingTitle: 'Meeting' }
   
   if (companyId && companyId !== 'demo') {
     try {

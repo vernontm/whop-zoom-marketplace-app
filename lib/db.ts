@@ -61,7 +61,7 @@ export async function getCompanyZoomCredentials(companyId: string): Promise<Zoom
           sdkKey: data.sdk_key,
           sdkSecret: data.sdk_secret,
           permanentMeetingId: data.permanent_meeting_id,
-          defaultMeetingTitle: data.default_meeting_title || 'Livestream',
+          defaultMeetingTitle: data.default_meeting_title || 'Meeting',
           updatedAt: data.updated_at
         }
         
@@ -170,7 +170,7 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
         sdkKey: data.sdk_key,
         sdkSecret: data.sdk_secret,
         permanentMeetingId: data.permanent_meeting_id,
-        defaultMeetingTitle: data.default_meeting_title || 'Livestream',
+        defaultMeetingTitle: data.default_meeting_title || 'Meeting',
         updatedAt: data.updated_at
       },
       adminUsernames: data.admin_usernames || [],

@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
         sdkKey: maskString(credentials.sdkKey),
         sdkSecret: '••••••••••••',
         permanentMeetingId: credentials.permanentMeetingId || '',
-        defaultMeetingTitle: credentials.defaultMeetingTitle || 'Livestream',
+        defaultMeetingTitle: credentials.defaultMeetingTitle || 'Meeting',
         updatedAt: credentials.updatedAt
       }
     })
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
       sdkKey: sdkKey.trim(),
       sdkSecret: sdkSecret.trim(),
       permanentMeetingId: permanentMeetingId?.trim() || undefined,
-      defaultMeetingTitle: defaultMeetingTitle?.trim() || 'Livestream'
+      defaultMeetingTitle: defaultMeetingTitle?.trim() || 'Meeting'
     }
 
     // Validate credentials with Zoom API (unless skipped)

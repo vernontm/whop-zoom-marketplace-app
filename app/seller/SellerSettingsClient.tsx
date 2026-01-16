@@ -43,7 +43,7 @@ export default function SellerSettingsClient({ companyId, companyTitle }: Seller
     sdkKey: '',
     sdkSecret: '',
     permanentMeetingId: '',
-    defaultMeetingTitle: 'Livestream'
+    defaultMeetingTitle: 'Meeting'
   })
 
   useEffect(() => {

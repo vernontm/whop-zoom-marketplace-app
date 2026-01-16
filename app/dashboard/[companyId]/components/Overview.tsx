@@ -69,7 +69,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
     const month = String(today.getMonth() + 1).padStart(2, '0')
     const day = String(today.getDate()).padStart(2, '0')
     const year = today.getFullYear()
-    return `Livestream ${month}-${day}-${year}`
+    return `Meeting ${month}-${day}-${year}`
   }
 
   return (
@@ -78,7 +78,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Welcome back!</h1>
-          <p className="text-zinc-500 mt-1">Manage your Zoom livestreams</p>
+          <p className="text-zinc-500 mt-1">Manage your Zoom meetings</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-zinc-500">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -163,7 +163,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                   ) : (
                     <>
                       <PlayIcon className="w-5 h-5" />
-                      Start Livestream
+                      Start Meeting
                     </>
                   )}
                 </button>

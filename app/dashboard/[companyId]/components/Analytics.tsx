@@ -10,7 +10,7 @@ export default function Analytics({ companyId }: AnalyticsProps) {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Analytics</h1>
-        <p className="text-zinc-500 mt-1">Track your livestream performance</p>
+        <p className="text-zinc-500 mt-1">Track your meeting performance</p>
       </div>
 
       {/* Stats Grid */}

@@ -3,8 +3,8 @@ import '@whop/frosted-ui/dist/index.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Whop Zoom Livestream',
-  description: 'Zoom livestreaming for Whop sellers',
+  title: 'Whop Zoom Meetings',
+  description: 'Zoom meetings for Whop sellers',
 }
 
 export default function RootLayout({

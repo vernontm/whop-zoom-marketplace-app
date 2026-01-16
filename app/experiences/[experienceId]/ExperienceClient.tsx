@@ -210,7 +210,7 @@ export default function ExperienceClient({ experienceId, companyId, user }: Expe
             <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
-            Join Livestream
+            Join Meeting
           </button>
         </div>
 
