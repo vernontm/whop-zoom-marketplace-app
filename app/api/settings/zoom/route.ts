@@ -139,13 +139,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Merge: use new value if provided, otherwise keep existing
+    // Helper to check if value is masked (contains dots like ••••)
+    const isMasked = (val: string | undefined) => val && (val.includes('••••') || val.includes('****'))
+    
+    // Merge: use new value if provided and not masked, otherwise keep existing
     const credentials: Omit<ZoomCredentials, 'updatedAt'> = {
-      accountId: accountId?.trim() || existingCredentials?.accountId || '',
-      clientId: clientId?.trim() || existingCredentials?.clientId || '',
-      clientSecret: clientSecret?.trim() || existingCredentials?.clientSecret || '',
-      sdkKey: sdkKey?.trim() || existingCredentials?.sdkKey || '',
-      sdkSecret: sdkSecret?.trim() || existingCredentials?.sdkSecret || '',
+      accountId: (accountId?.trim() && !isMasked(accountId)) ? accountId.trim() : existingCredentials?.accountId || '',
+      clientId: (clientId?.trim() && !isMasked(clientId)) ? clientId.trim() : existingCredentials?.clientId || '',
+      clientSecret: (clientSecret?.trim() && !isMasked(clientSecret)) ? clientSecret.trim() : existingCredentials?.clientSecret || '',
+      sdkKey: (sdkKey?.trim() && !isMasked(sdkKey)) ? sdkKey.trim() : existingCredentials?.sdkKey || '',
+      sdkSecret: (sdkSecret?.trim() && !isMasked(sdkSecret)) ? sdkSecret.trim() : existingCredentials?.sdkSecret || '',
       permanentMeetingId: permanentMeetingId?.trim() || existingCredentials?.permanentMeetingId || undefined,
       defaultMeetingTitle: defaultMeetingTitle?.trim() || existingCredentials?.defaultMeetingTitle || 'Meeting',
       brandColor: brandColor?.trim() || existingCredentials?.brandColor || '#5dc6ae',

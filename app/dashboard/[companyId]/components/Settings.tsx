@@ -63,17 +63,20 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
       const response = await fetch(`/api/settings/zoom?companyId=${companyId}`)
       const data = await response.json()
       if (data.configured) {
+        // Don't populate credential fields with masked values - leave them empty
+        // User must re-enter credentials if they want to change them
         setFormData({
-          accountId: data.accountId || '',
-          clientId: data.clientId || '',
+          accountId: '',
+          clientId: '',
           clientSecret: '',
-          sdkKey: data.sdkKey || '',
+          sdkKey: '',
           sdkSecret: '',
           permanentMeetingId: data.permanentMeetingId || '',
           defaultMeetingTitle: data.defaultMeetingTitle || '',
           brandColor: data.brandColor || '#5dc6ae',
           webhookSecretToken: ''
         })
+        // savedData stores masked values for display in placeholders only
         setSavedData({
           accountId: data.accountId || '',
           clientId: data.clientId || '',
