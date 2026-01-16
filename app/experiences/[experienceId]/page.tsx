@@ -93,8 +93,8 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
     }
   }
   
-  // Get company ID from headers
-  const companyId = headersList.get('x-whop-company-id') || 'dev-company'
+  // Get company ID from headers, or use experienceId as fallback (they're often the same)
+  const companyId = headersList.get('x-whop-company-id') || experienceId
   
   // Check if user has admin/owner role from Whop headers
   // Whop sends various headers to indicate user role
