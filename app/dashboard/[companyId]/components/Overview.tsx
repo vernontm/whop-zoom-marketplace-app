@@ -19,9 +19,7 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
   const [isStarting, setIsStarting] = useState(false)
   const [checkingLive, setCheckingLive] = useState(true)
   const [showStartModal, setShowStartModal] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
   const [meetingTitle, setMeetingTitle] = useState('')
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     checkLiveMeeting()
@@ -81,16 +79,6 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
     return `Meeting ${month}-${day}-${year}`
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const getMeetingLink = () => {
-    if (!liveMeeting) return ''
-    return `${window.location.origin}/meeting/live?meetingNumber=${liveMeeting.meetingNumber}&password=${liveMeeting.password}&title=${encodeURIComponent(liveMeeting.title)}&companyId=${companyId}`
-  }
 
   return (
     <div className="space-y-6">
@@ -151,22 +139,13 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShareIcon className="w-5 h-5" />
-                    Share
-                  </button>
-                  <a
-                    href={`/meeting/live?meetingNumber=${liveMeeting.meetingNumber}&password=${liveMeeting.password}&title=${encodeURIComponent(liveMeeting.title)}&host=1&companyId=${companyId}`}
-                    className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                  >
-                    <PlayIcon className="w-5 h-5" />
-                    Join Meeting
-                  </a>
-                </div>
+                <a
+                  href={`/meeting/live?meetingNumber=${liveMeeting.meetingNumber}&password=${liveMeeting.password}&title=${encodeURIComponent(liveMeeting.title)}&host=1&companyId=${companyId}`}
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <PlayIcon className="w-5 h-5" />
+                  Join Meeting
+                </a>
               </div>
             ) : (
               <div className="space-y-4">
@@ -186,28 +165,6 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                 )}
               </div>
             )}
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                  <UsersIcon className="w-5 h-5 text-blue-500" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-white">0</p>
-              <p className="text-zinc-500 text-sm">Total Viewers</p>
-            </div>
-            <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                  <ClockIcon className="w-5 h-5 text-purple-500" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-white">0h</p>
-              <p className="text-zinc-500 text-sm">Total Duration</p>
-            </div>
           </div>
         </div>
 
@@ -252,56 +209,6 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                   {zoomConfig.accountId || '—'}
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Quick Actions Card */}
-          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
-            <h2 className="text-white font-bold text-lg mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => zoomConfig.configured && setShowStartModal(true)}
-                disabled={!zoomConfig.configured || !!liveMeeting}
-                className="p-4 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-3">
-                  <PlayIcon className="w-5 h-5 text-emerald-500" />
-                </div>
-                <p className="text-white font-medium text-sm">Start Meeting</p>
-                <p className="text-zinc-500 text-xs mt-0.5">Begin a new session</p>
-              </button>
-              <button
-                onClick={() => liveMeeting && setShowShareModal(true)}
-                disabled={!liveMeeting}
-                className="p-4 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mb-3">
-                  <ShareIcon className="w-5 h-5 text-blue-500" />
-                </div>
-                <p className="text-white font-medium text-sm">Share Link</p>
-                <p className="text-zinc-500 text-xs mt-0.5">Invite participants</p>
-              </button>
-              <button
-                onClick={() => liveMeeting && copyToClipboard(liveMeeting.meetingNumber)}
-                disabled={!liveMeeting}
-                className="p-4 bg-zinc-800/50 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center mb-3">
-                  <CopyIcon className="w-5 h-5 text-purple-500" />
-                </div>
-                <p className="text-white font-medium text-sm">Copy ID</p>
-                <p className="text-zinc-500 text-xs mt-0.5">Meeting number</p>
-              </button>
-              <a
-                href={liveMeeting ? `/meeting/live?meetingNumber=${liveMeeting.meetingNumber}&password=${liveMeeting.password}&title=${encodeURIComponent(liveMeeting.title)}&host=1&companyId=${companyId}` : '#'}
-                className={`p-4 bg-zinc-800/50 hover:bg-zinc-800 rounded-xl transition-colors text-left ${!liveMeeting ? 'opacity-50 pointer-events-none' : ''}`}
-              >
-                <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mb-3">
-                  <ExternalLinkIcon className="w-5 h-5 text-orange-500" />
-                </div>
-                <p className="text-white font-medium text-sm">Open Meeting</p>
-                <p className="text-zinc-500 text-xs mt-0.5">Join as host</p>
-              </a>
             </div>
           </div>
         </div>
@@ -356,58 +263,6 @@ export default function Overview({ companyId, zoomConfig }: OverviewProps) {
                   )}
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Share Modal */}
-      {showShareModal && liveMeeting && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Share Meeting</h2>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                <XIcon className="w-5 h-5 text-zinc-400" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Meeting Link</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={getMeetingLink()}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm font-mono truncate"
-                  />
-                  <button
-                    onClick={() => copyToClipboard(getMeetingLink())}
-                    className="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors"
-                  >
-                    {copied ? <CheckIcon className="w-5 h-5" /> : <CopyIcon className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="bg-zinc-900 rounded-xl p-4">
-                  <p className="text-zinc-500 text-xs mb-1">Meeting ID</p>
-                  <p className="text-white font-mono">{liveMeeting.meetingNumber}</p>
-                </div>
-                <div className="bg-zinc-900 rounded-xl p-4">
-                  <p className="text-zinc-500 text-xs mb-1">Password</p>
-                  <p className="text-white font-mono">{liveMeeting.password}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors mt-2"
-              >
-                Done
-              </button>
             </div>
           </div>
         </div>
