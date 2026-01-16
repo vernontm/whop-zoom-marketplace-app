@@ -15,6 +15,7 @@ interface FormData {
   sdkKey: string
   sdkSecret: string
   permanentMeetingId: string
+  webhookSecretToken: string
 }
 
 export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
@@ -24,7 +25,8 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
     clientSecret: '',
     sdkKey: '',
     sdkSecret: '',
-    permanentMeetingId: ''
+    permanentMeetingId: '',
+    webhookSecretToken: ''
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -45,7 +47,8 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           clientSecret: '',
           sdkKey: data.sdkKey || '',
           sdkSecret: '',
-          permanentMeetingId: data.permanentMeetingId || ''
+          permanentMeetingId: data.permanentMeetingId || '',
+          webhookSecretToken: ''
         })
       }
     } catch (error) {
@@ -72,6 +75,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           sdkKey: formData.sdkKey,
           sdkSecret: formData.sdkSecret,
           permanentMeetingId: formData.permanentMeetingId,
+          webhookSecretToken: formData.webhookSecretToken,
           defaultMeetingTitle: 'Meeting',
           adminUsernames: [],
           skipValidation: true
@@ -226,6 +230,40 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
           </div>
         </div>
 
+        {/* Webhook Settings */}
+        <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+              <WebhookIcon className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <h2 className="text-white font-semibold">Webhook Settings</h2>
+              <p className="text-zinc-300 text-sm">Required for live meeting detection</p>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-4">
+            <p className="text-zinc-300 text-sm mb-2">
+              <strong className="text-white">Webhook URL</strong> (add this to your Zoom app):
+            </p>
+            <code className="block bg-zinc-800 px-3 py-2 rounded-lg text-emerald-400 text-sm break-all">
+              https://whop-zoom-marketplace-app.vercel.app/api/zoom/webhook
+            </code>
+          </div>
+
+          <div className="space-y-4">
+            <InputField
+              label="Webhook Secret Token"
+              name="webhookSecretToken"
+              value={formData.webhookSecretToken}
+              onChange={handleChange}
+              placeholder="Your Zoom Webhook Secret Token"
+              type="password"
+              hint="Found in your Zoom app's Event Subscriptions settings. Leave blank to keep existing."
+            />
+          </div>
+        </div>
+
         {/* Submit */}
         <div className="flex items-center justify-between">
           <p className="text-zinc-500 text-sm">
@@ -304,6 +342,14 @@ function SettingsIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  )
+}
+
+function WebhookIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   )
 }

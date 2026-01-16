@@ -11,6 +11,7 @@ export interface ZoomCredentials {
   sdkSecret: string
   permanentMeetingId?: string
   defaultMeetingTitle?: string
+  webhookSecretToken?: string
   updatedAt: string
 }
 
@@ -62,6 +63,7 @@ export async function getCompanyZoomCredentials(companyId: string): Promise<Zoom
           sdkSecret: data.sdk_secret,
           permanentMeetingId: data.permanent_meeting_id,
           defaultMeetingTitle: data.default_meeting_title || 'Meeting',
+          webhookSecretToken: data.webhook_secret_token,
           updatedAt: data.updated_at
         }
         
@@ -171,6 +173,7 @@ export async function getCompanySettings(companyId: string): Promise<CompanySett
         sdkSecret: data.sdk_secret,
         permanentMeetingId: data.permanent_meeting_id,
         defaultMeetingTitle: data.default_meeting_title || 'Meeting',
+        webhookSecretToken: data.webhook_secret_token,
         updatedAt: data.updated_at
       },
       adminUsernames: data.admin_usernames || [],
@@ -202,6 +205,7 @@ export async function saveCompanySettings(companyId: string, settings: CompanySe
       sdk_secret: settings.zoomCredentials?.sdkSecret,
       permanent_meeting_id: settings.zoomCredentials?.permanentMeetingId?.replace(/\s/g, ''),
       default_meeting_title: settings.zoomCredentials?.defaultMeetingTitle || 'Livestream',
+      webhook_secret_token: settings.zoomCredentials?.webhookSecretToken,
       admin_usernames: settings.adminUsernames || [],
       updated_at: new Date().toISOString()
     }

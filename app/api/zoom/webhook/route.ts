@@ -2,19 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { supabase } from '@/lib/supabase'
 
-// Zoom webhook secret token - set this in your environment variables
-const ZOOM_WEBHOOK_SECRET = process.env.ZOOM_WEBHOOK_SECRET_TOKEN || ''
+// Get webhook secret for an account from database
+async function getWebhookSecretForAccount(accountId: string): Promise<string | null> {
+  if (!supabase) return null
+  
+  try {
+    const { data, error } = await supabase
+      .from('company_zoom_settings')
+      .select('webhook_secret_token')
+      .eq('account_id', accountId)
+      .single()
+    
+    if (error || !data) return null
+    return data.webhook_secret_token
+  } catch {
+    return null
+  }
+}
 
-// Verify Zoom webhook signature
-function verifyZoomWebhook(payload: string, signature: string, timestamp: string): boolean {
-  if (!ZOOM_WEBHOOK_SECRET) {
-    console.warn('ZOOM_WEBHOOK_SECRET_TOKEN not configured, skipping verification')
+// Verify Zoom webhook signature with account-specific secret
+function verifyZoomWebhook(payload: string, signature: string, timestamp: string, secret: string): boolean {
+  if (!secret) {
+    console.warn('No webhook secret found, skipping verification')
     return true
   }
   
   const message = `v0:${timestamp}:${payload}`
   const hashForVerify = crypto
-    .createHmac('sha256', ZOOM_WEBHOOK_SECRET)
+    .createHmac('sha256', secret)
     .update(message)
     .digest('hex')
   
@@ -22,12 +37,13 @@ function verifyZoomWebhook(payload: string, signature: string, timestamp: string
   return signature === expectedSignature
 }
 
-// Handle Zoom URL validation challenge
-function handleUrlValidation(plainToken: string): { plainToken: string; encryptedToken: string } {
-  const encryptedToken = crypto
-    .createHmac('sha256', ZOOM_WEBHOOK_SECRET)
-    .update(plainToken)
-    .digest('hex')
+// Handle Zoom URL validation challenge - needs secret from request context
+function handleUrlValidation(plainToken: string, secret: string): { plainToken: string; encryptedToken: string } {
+  // For URL validation, we need to use a default secret or skip encryption
+  // Since we don't know which account this is for yet
+  const encryptedToken = secret 
+    ? crypto.createHmac('sha256', secret).update(plainToken).digest('hex')
+    : plainToken
   
   return { plainToken, encryptedToken }
 }
@@ -39,10 +55,15 @@ export async function POST(req: NextRequest) {
     
     console.log('Zoom webhook received:', body.event)
     
+    const accountId = body.payload?.account_id || ''
+    
+    // Get webhook secret for this account
+    const webhookSecret = await getWebhookSecretForAccount(accountId) || ''
+    
     // Handle URL validation (required by Zoom when setting up webhooks)
     if (body.event === 'endpoint.url_validation') {
-      console.log('Handling URL validation challenge')
-      const response = handleUrlValidation(body.payload.plainToken)
+      console.log('Handling URL validation challenge for account:', accountId)
+      const response = handleUrlValidation(body.payload.plainToken, webhookSecret)
       return NextResponse.json(response)
     }
     
@@ -50,7 +71,7 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('x-zm-signature') || ''
     const timestamp = req.headers.get('x-zm-request-timestamp') || ''
     
-    if (!verifyZoomWebhook(payload, signature, timestamp)) {
+    if (!verifyZoomWebhook(payload, signature, timestamp, webhookSecret)) {
       console.error('Invalid webhook signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
@@ -64,7 +85,6 @@ export async function POST(req: NextRequest) {
     }
     
     const meetingId = String(meetingPayload.id)
-    const accountId = body.payload?.account_id
     const topic = meetingPayload.topic || 'Meeting'
     const hostId = meetingPayload.host_id
     const password = meetingPayload.password || ''
