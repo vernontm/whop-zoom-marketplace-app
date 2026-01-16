@@ -112,9 +112,10 @@ function LiveMeetingContent() {
                 setIsLoading(false)
                 setSdkReady(true)
               },
-              error: (err: Error) => {
-                console.error('Failed to join meeting:', err)
-                setError('Failed to join meeting. Please try again.')
+              error: (err: any) => {
+                console.error('Failed to join meeting:', JSON.stringify(err, null, 2))
+                console.error('Error code:', err?.errorCode, 'Error message:', err?.errorMessage || err?.reason)
+                setError(`Failed to join meeting: ${err?.errorMessage || err?.reason || 'Unknown error'}`)
                 setIsLoading(false)
               }
             })
