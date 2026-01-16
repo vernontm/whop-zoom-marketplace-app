@@ -28,8 +28,8 @@ export default function HowTo() {
               <li>Click <strong className="text-white">Create</strong></li>
             </ol>
             <div className="bg-zinc-900 rounded-xl p-4">
-              <p className="text-zinc-400 text-xs mb-2">From this app, you'll need:</p>
-              <ul className="space-y-1 text-sm">
+              <p className="text-zinc-300 mb-3">From this app, you'll need:</p>
+              <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                   <span className="text-white">Account ID</span>
@@ -77,7 +77,7 @@ export default function HowTo() {
                 <span className="text-zinc-500 text-xs">Update meetings</span>
               </div>
             </div>
-            <p className="text-zinc-400 text-xs mt-3">
+            <p className="text-zinc-300 mt-4">
               After adding scopes, click <strong className="text-white">Activate</strong> to enable your app.
             </p>
           </div>
@@ -103,8 +103,8 @@ export default function HowTo() {
               <li>Click <strong className="text-white">Create</strong></li>
             </ol>
             <div className="bg-zinc-900 rounded-xl p-4">
-              <p className="text-zinc-400 text-xs mb-2">From this app, you'll need:</p>
-              <ul className="space-y-1 text-sm">
+              <p className="text-zinc-300 mb-3">From this app, you'll need:</p>
+              <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                   <span className="text-white">SDK Key (Client ID)</span>
@@ -130,18 +130,18 @@ export default function HowTo() {
             <p className="text-zinc-300 mb-4">
               Go to the <strong className="text-white">Configure Settings</strong> tab and enter all the credentials you collected:
             </p>
-            <div className="bg-zinc-900 rounded-xl p-4 space-y-3">
+            <div className="bg-zinc-900 rounded-xl p-4 space-y-4">
               <div>
-                <p className="text-zinc-400 text-xs mb-1">From Server-to-Server OAuth App:</p>
-                <ul className="space-y-1 text-sm text-white">
+                <p className="text-zinc-300 mb-2">From Server-to-Server OAuth App:</p>
+                <ul className="space-y-2 text-white">
                   <li>• Account ID</li>
                   <li>• Client ID</li>
                   <li>• Client Secret</li>
                 </ul>
               </div>
-              <div className="border-t border-zinc-800 pt-3">
-                <p className="text-zinc-400 text-xs mb-1">From Meeting SDK App:</p>
-                <ul className="space-y-1 text-sm text-white">
+              <div className="border-t border-zinc-800 pt-4">
+                <p className="text-zinc-300 mb-2">From Meeting SDK App:</p>
+                <ul className="space-y-2 text-white">
                   <li>• SDK Key</li>
                   <li>• SDK Secret</li>
                 </ul>
