@@ -123,28 +123,47 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, skipValidation } = body
+    const { accountId, clientId, clientSecret, sdkKey, sdkSecret, permanentMeetingId, defaultMeetingTitle, webhookSecretToken, skipValidation } = body
 
-    // Validate required fields
-    if (!accountId || !clientId || !clientSecret || !sdkKey || !sdkSecret) {
+    // Get existing credentials to merge with new values
+    const existingCredentials = await getCompanyZoomCredentials(companyId)
+    
+    // For new setups, require all fields. For updates, merge with existing.
+    const isNewSetup = !existingCredentials
+    
+    if (isNewSetup) {
+      // Validate required fields for new setup
+      if (!accountId || !clientId || !clientSecret || !sdkKey || !sdkSecret) {
+        return NextResponse.json(
+          { error: 'All Zoom credentials are required (Account ID, Client ID, Client Secret, SDK Key, SDK Secret)' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Merge: use new value if provided, otherwise keep existing
+    const credentials: Omit<ZoomCredentials, 'updatedAt'> = {
+      accountId: accountId?.trim() || existingCredentials?.accountId || '',
+      clientId: clientId?.trim() || existingCredentials?.clientId || '',
+      clientSecret: clientSecret?.trim() || existingCredentials?.clientSecret || '',
+      sdkKey: sdkKey?.trim() || existingCredentials?.sdkKey || '',
+      sdkSecret: sdkSecret?.trim() || existingCredentials?.sdkSecret || '',
+      permanentMeetingId: permanentMeetingId?.trim() || existingCredentials?.permanentMeetingId || undefined,
+      defaultMeetingTitle: defaultMeetingTitle?.trim() || existingCredentials?.defaultMeetingTitle || 'Meeting',
+      webhookSecretToken: webhookSecretToken?.trim() || existingCredentials?.webhookSecretToken || undefined
+    }
+
+    // Validate that we have all required fields after merge
+    if (!credentials.accountId || !credentials.clientId || !credentials.clientSecret || !credentials.sdkKey || !credentials.sdkSecret) {
       return NextResponse.json(
         { error: 'All Zoom credentials are required (Account ID, Client ID, Client Secret, SDK Key, SDK Secret)' },
         { status: 400 }
       )
     }
 
-    const credentials: Omit<ZoomCredentials, 'updatedAt'> = {
-      accountId: accountId.trim(),
-      clientId: clientId.trim(),
-      clientSecret: clientSecret.trim(),
-      sdkKey: sdkKey.trim(),
-      sdkSecret: sdkSecret.trim(),
-      permanentMeetingId: permanentMeetingId?.trim() || undefined,
-      defaultMeetingTitle: defaultMeetingTitle?.trim() || 'Meeting'
-    }
-
-    // Validate credentials with Zoom API (unless skipped)
-    if (!skipValidation) {
+    // Validate credentials with Zoom API (unless skipped or only updating non-API fields)
+    const onlyUpdatingNonApiFields = !accountId && !clientId && !clientSecret && existingCredentials
+    if (!skipValidation && !onlyUpdatingNonApiFields) {
       const validation = await validateZoomCredentials(credentials as ZoomCredentials)
       if (!validation.valid) {
         return NextResponse.json(
