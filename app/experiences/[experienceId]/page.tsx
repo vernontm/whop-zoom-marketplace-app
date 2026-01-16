@@ -28,18 +28,24 @@ async function getWhopUserFromToken(userToken: string): Promise<{ username: stri
       headers: {
         'Authorization': `Bearer ${userToken}`,
         'Content-Type': 'application/json'
-      }
+      },
+      cache: 'no-store'
     })
     
     if (!response.ok) {
-      console.error('Whop /me API error:', response.status)
+      console.error('Whop /me API error:', response.status, await response.text())
       return null
     }
     
     const data = await response.json()
-    console.log('Whop username:', data.username || data.name)
+    console.log('Whop API response:', JSON.stringify(data, null, 2))
+    
+    // Try multiple possible field names for username
+    const username = data.username || data.name || data.social?.username || data.public_username || data.id || 'Viewer'
+    console.log('Resolved username:', username)
+    
     return {
-      username: data.username || data.name || data.id || 'Viewer',
+      username,
       email: data.email || ''
     }
   } catch (err) {
@@ -56,12 +62,15 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   // Get Whop user token from headers
   const whopUserToken = headersList.get('x-whop-user-token')
   
+  console.log('Whop user token present:', !!whopUserToken)
+  
   let userId: string | null = null
   let whopUsername: string | null = null
   let email = ''
   
   // Decode the JWT and fetch user info from Whop API
   if (whopUserToken) {
+    console.log('Token found, decoding...')
     const payload = decodeJwtPayload(whopUserToken)
     if (payload && payload.sub) {
       userId = payload.sub as string
