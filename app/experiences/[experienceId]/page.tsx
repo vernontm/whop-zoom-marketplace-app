@@ -59,18 +59,27 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   const query = await searchParams
   const headersList = await headers()
   
-  // Get Whop user token from headers
+  // Get Whop headers
   const whopUserToken = headersList.get('x-whop-user-token')
+  const whopUsernameHeader = headersList.get('x-whop-username')
+  const whopUserIdHeader = headersList.get('x-whop-user-id')
+  const whopUserEmailHeader = headersList.get('x-whop-user-email')
   
-  console.log('Whop user token present:', !!whopUserToken)
+  console.log('Whop headers:', {
+    tokenPresent: !!whopUserToken,
+    usernameHeader: whopUsernameHeader,
+    userIdHeader: whopUserIdHeader,
+    emailHeader: whopUserEmailHeader
+  })
   
-  let userId: string | null = null
-  let whopUsername: string | null = null
-  let email = ''
+  let userId: string | null = whopUserIdHeader
+  let whopUsername: string | null = whopUsernameHeader
+  let email = whopUserEmailHeader || ''
   
-  // Decode the JWT and fetch user info from Whop API
-  if (whopUserToken) {
-    console.log('Token found, decoding...')
+  // If we have the username header directly, use it
+  // Otherwise, try to fetch from API using the token
+  if (!whopUsername && whopUserToken) {
+    console.log('No username header, trying API with token...')
     const payload = decodeJwtPayload(whopUserToken)
     if (payload && payload.sub) {
       userId = payload.sub as string
