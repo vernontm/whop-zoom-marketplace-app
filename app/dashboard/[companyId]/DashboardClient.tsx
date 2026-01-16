@@ -4,8 +4,9 @@ import { useState } from 'react'
 import Overview from './components/Overview'
 import Settings from './components/Settings'
 import HowTo from './components/HowTo'
+import ClientPreview from './components/ClientPreview'
 
-export type TabType = 'overview' | 'settings' | 'howto'
+export type TabType = 'overview' | 'settings' | 'howto' | 'preview'
 
 export interface ZoomConfig {
   configured: boolean
@@ -31,6 +32,7 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
     { id: 'overview' as TabType, label: 'Overview' },
     { id: 'settings' as TabType, label: 'Configure Settings' },
     { id: 'howto' as TabType, label: 'How To' },
+    { id: 'preview' as TabType, label: 'Client Preview' },
   ]
 
   return (
@@ -61,10 +63,9 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
               className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm font-medium rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
-              View Client Page
+              Open in New Tab
             </a>
           </div>
         </div>
@@ -75,6 +76,7 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
         {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} onNavigateToSettings={() => setActiveTab('settings')} />}
         {activeTab === 'settings' && <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />}
         {activeTab === 'howto' && <HowTo />}
+        {activeTab === 'preview' && <ClientPreview companyId={companyId} />}
       </main>
     </div>
   )
