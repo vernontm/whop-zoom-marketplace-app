@@ -13,7 +13,6 @@ export default function Sidebar({ activeTab, setActiveTab, zoomConfigured }: Sid
     { id: 'overview' as TabType, label: 'Overview', icon: HomeIcon },
     { id: 'meetings' as TabType, label: 'Meetings', icon: VideoIcon },
     { id: 'settings' as TabType, label: 'Settings', icon: SettingsIcon, badge: !zoomConfigured },
-    { id: 'analytics' as TabType, label: 'Analytics', icon: ChartIcon },
   ]
 
   return (
@@ -44,7 +43,7 @@ export default function Sidebar({ activeTab, setActiveTab, zoomConfigured }: Sid
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                   activeTab === item.id
                     ? 'bg-emerald-500/10 text-emerald-500'
-                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                    : 'text-white hover:bg-zinc-800'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
