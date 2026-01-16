@@ -32,9 +32,9 @@ export interface CompanySettings {
   updatedAt: string
 }
 
-// In-memory cache for credentials (reduces DB calls)
+// In-memory cache for credentials (disabled for now to avoid stale credential issues)
 const credentialsCache = new Map<string, { data: ZoomCredentials; expiresAt: number }>()
-const CACHE_TTL = 5 * 60 * 1000 // 5 minute cache
+const CACHE_TTL = 0 // Disabled - was 5 * 60 * 1000 (5 minutes)
 
 /**
  * Get Zoom credentials for a company
