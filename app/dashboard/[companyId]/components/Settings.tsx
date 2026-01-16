@@ -126,7 +126,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-zinc-500 mt-1">Configure your Zoom integration</p>
+        <p className="text-zinc-300 mt-1">Configure your Zoom integration</p>
       </div>
 
       {/* Message */}
@@ -145,7 +145,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
             </div>
             <div>
               <h2 className="text-white font-semibold">Server-to-Server OAuth</h2>
-              <p className="text-zinc-500 text-sm">For creating and managing meetings</p>
+              <p className="text-zinc-300 text-sm">For creating and managing meetings</p>
             </div>
           </div>
 
@@ -184,7 +184,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
             </div>
             <div>
               <h2 className="text-white font-semibold">Meeting SDK</h2>
-              <p className="text-zinc-500 text-sm">For embedding meetings in your app</p>
+              <p className="text-zinc-300 text-sm">For embedding meetings in your app</p>
             </div>
           </div>
 
@@ -216,7 +216,7 @@ export default function Settings({ companyId, onConfigUpdate }: SettingsProps) {
             </div>
             <div>
               <h2 className="text-white font-semibold">Additional Settings</h2>
-              <p className="text-zinc-500 text-sm">Optional configuration</p>
+              <p className="text-zinc-300 text-sm">Optional configuration</p>
             </div>
           </div>
 
@@ -302,7 +302,7 @@ interface InputFieldProps {
 function InputField({ label, name, value, onChange, placeholder, type = 'text', hint }: InputFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-zinc-400 mb-2">{label}</label>
+      <label className="block text-sm font-medium text-white mb-2">{label}</label>
       <input
         type={type}
         name={name}
@@ -311,7 +311,7 @@ function InputField({ label, name, value, onChange, placeholder, type = 'text', 
         placeholder={placeholder}
         className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
       />
-      {hint && <p className="text-zinc-500 text-xs mt-1">{hint}</p>}
+      {hint && <p className="text-zinc-400 text-xs mt-1">{hint}</p>}
     </div>
   )
 }

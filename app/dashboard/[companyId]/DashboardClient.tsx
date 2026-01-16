@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Sidebar from './components/Sidebar'
 import Overview from './components/Overview'
 import Meetings from './components/Meetings'
 import Settings from './components/Settings'
-import Analytics from './components/Analytics'
 
-export type TabType = 'overview' | 'meetings' | 'settings' | 'analytics'
+export type TabType = 'overview' | 'meetings' | 'settings'
 
 export interface ZoomConfig {
   configured: boolean
@@ -29,19 +27,40 @@ export default function DashboardClient({ companyId, initialConfig, userName, is
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [zoomConfig, setZoomConfig] = useState<ZoomConfig>(initialConfig)
 
+  const tabs = [
+    { id: 'overview' as TabType, label: 'Overview' },
+    { id: 'meetings' as TabType, label: 'Meetings' },
+    { id: 'settings' as TabType, label: 'Configure Settings' },
+  ]
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} zoomConfigured={zoomConfig.configured} />
-      <main className="flex-1 p-6 overflow-auto">
-        {/* Welcome header */}
-        <div className="mb-6">
-          <p className="text-zinc-400 text-sm">Welcome, <span className="text-white font-medium">{userName}</span></p>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Horizontal Top Navigation */}
+      <nav className="border-b border-zinc-800">
+        <div className="px-6">
+          <div className="flex items-center gap-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-white text-white'
+                    : 'border-transparent text-zinc-400 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-        
+      </nav>
+
+      {/* Main Content */}
+      <main className="p-6">
         {activeTab === 'overview' && <Overview companyId={companyId} zoomConfig={zoomConfig} />}
         {activeTab === 'meetings' && <Meetings companyId={companyId} />}
         {activeTab === 'settings' && <Settings companyId={companyId} onConfigUpdate={setZoomConfig} />}
-        {activeTab === 'analytics' && <Analytics companyId={companyId} />}
       </main>
     </div>
   )
