@@ -19,6 +19,12 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+button, input, optgroup, select, textarea {
+  margin: 0;
+  font: inherit;
+  color: #ffffff;
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
