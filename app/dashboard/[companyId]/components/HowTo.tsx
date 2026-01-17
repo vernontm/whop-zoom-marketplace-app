@@ -120,8 +120,17 @@ export default function HowTo() {
               <li>Give your app a name (e.g., "Whop Meeting SDK")</li>
               <li>Click <strong className="text-white">Create</strong></li>
             </ol>
+            
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
+              <p className="text-amber-400 font-medium mb-2">⚠️ Important: Use Development Credentials</p>
+              <p className="text-zinc-300 text-sm">
+                Until your Meeting SDK app is published, you must use <strong className="text-white">Development</strong> credentials, not Production. 
+                In your Meeting SDK app, look for the <strong className="text-white">App Credentials</strong> section and make sure you're on the <strong className="text-white">Development</strong> tab.
+              </p>
+            </div>
+            
             <div className="bg-zinc-900 rounded-xl p-4">
-              <p className="text-zinc-300 mb-3">From this app, you'll need:</p>
+              <p className="text-zinc-300 mb-3">From this app (Development tab), you'll need:</p>
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -132,6 +141,32 @@ export default function HowTo() {
                   <span className="text-white">SDK Secret (Client Secret)</span>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Step 3.5: Add Domain Allowlist */}
+      <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-emerald-500 font-bold">3b</span>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-white font-bold text-lg mb-2">Add Domain to Allowlist</h2>
+            <p className="text-zinc-300 mb-4">
+              Your Meeting SDK app needs to know which domains are allowed to use it.
+            </p>
+            <ol className="list-decimal list-inside space-y-3 text-zinc-300 mb-4">
+              <li>In your Meeting SDK app, go to the <strong className="text-white">Features</strong> or <strong className="text-white">Embed</strong> section</li>
+              <li>Find <strong className="text-white">Domain Allowlist</strong></li>
+              <li>Add your Whop app domain (e.g., <code className="text-emerald-400 bg-zinc-800 px-2 py-0.5 rounded">yourapp.apps.whop.com</code>)</li>
+              <li>Click <strong className="text-white">Save</strong></li>
+            </ol>
+            <div className="bg-zinc-900 rounded-xl p-4">
+              <p className="text-zinc-300 mb-2">Your Whop app domain looks like:</p>
+              <code className="text-emerald-400 text-sm">xxxxxxxx.apps.whop.com</code>
+              <p className="text-zinc-500 text-xs mt-2">You can find this in your browser's address bar when viewing your app on Whop.</p>
             </div>
           </div>
         </div>
@@ -209,9 +244,10 @@ export default function HowTo() {
             <h2 className="text-white font-bold text-lg mb-2">Tips</h2>
             <ul className="space-y-2 text-zinc-300">
               <li>• Make sure your Server-to-Server OAuth app is <strong className="text-white">activated</strong> before testing</li>
-              <li>• Use <strong className="text-white">Production credentials</strong>, not Development credentials</li>
+              <li>• Use <strong className="text-white">Development credentials</strong> for Meeting SDK until your app is published</li>
               <li>• The SDK Key and SDK Secret are different from the OAuth Client ID and Secret</li>
-              <li>• If you get signature errors, double-check that you're using Meeting SDK credentials (not OAuth)</li>
+              <li>• If you get "Signature is invalid" errors, check that your domain is in the Meeting SDK allowlist</li>
+              <li>• Make sure you're using the correct credentials from the <strong className="text-white">Development</strong> tab (not Production)</li>
             </ul>
           </div>
         </div>
