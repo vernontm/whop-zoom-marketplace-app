@@ -196,6 +196,34 @@ export default function HowTo() {
         </div>
       </div>
 
+      {/* Step 4b: Starting Your Meeting */}
+      <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-emerald-500 font-bold">4b</span>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-white font-bold text-lg mb-2">Starting Your Meeting</h2>
+            <p className="text-zinc-300 mb-4">
+              When you're ready to go live, start your meeting from the <strong className="text-white">Zoom desktop app</strong>.
+            </p>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
+              <p className="text-amber-400 font-medium mb-2">⚠️ Important: Use the Desktop App</p>
+              <p className="text-zinc-300 text-sm">
+                You must start the meeting as the host using the <strong className="text-white">Zoom desktop application</strong> on your computer. 
+                Your members will then be able to join and watch through the Whop app in their browser.
+              </p>
+            </div>
+            <ol className="list-decimal list-inside space-y-3 text-zinc-300">
+              <li>Open the <strong className="text-white">Zoom desktop app</strong> on your computer</li>
+              <li>Sign in with the same Zoom account used for your API credentials</li>
+              <li>Start your scheduled meeting or use your Personal Meeting ID</li>
+              <li>Your members will automatically see the meeting is live on Whop</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
       {/* Step 5: Enter Credentials */}
       <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6">
         <div className="flex items-start gap-4">
