@@ -84,7 +84,7 @@ function LiveMeetingContent() {
           throw new Error('Zoom SDK key not configured for this company')
         }
 
-        // Initialize the SDK - viewers can hear audio but start muted, no video
+        // Initialize the SDK - viewers can hear audio from host
         ZoomMtg.init({
           leaveUrl: window.location.origin + '/experiences/test',
           patchJsMedia: true,
@@ -100,7 +100,7 @@ function LiveMeetingContent() {
           success: () => {
             console.log('Zoom SDK initialized')
             
-            // Join the meeting as view-only (no audio/video)
+            // Join the meeting - viewers will hear audio but be muted
             console.log('Joining with:', { sdkKey, meetingNumber, userName, signatureLength: signature?.length })
             ZoomMtg.join({
               signature: signature,
@@ -108,10 +108,18 @@ function LiveMeetingContent() {
               meetingNumber: String(meetingNumber),
               userName: userName,
               passWord: password,
+              tk: '', // Required empty string
+              zak: '', // Required empty string for attendees
               success: () => {
                 console.log('Joined meeting successfully')
                 setIsLoading(false)
                 setSdkReady(true)
+                
+                // Mute the user's mic but allow them to hear others
+                ZoomMtg.mute({
+                  userId: 0, // 0 = current user
+                  mute: true
+                })
               },
               error: (err: any) => {
                 console.error('Failed to join meeting:', JSON.stringify(err, null, 2))
