@@ -71,6 +71,50 @@ export async function verifyUserToken(headersList: Headers): Promise<{ userId: s
   }
 }
 
+// Your app's product ID - Whop owners must subscribe to this to use the app
+const APP_PRODUCT_ID = 'prod_VbmcPsBGCzzvg'
+
+// Check if a company/owner has an active subscription to your app
+export async function checkCompanyAppSubscription(companyId: string): Promise<boolean> {
+  try {
+    const sdk = getWhopSdk()
+    
+    // Get the company to find the owner
+    const company = await sdk.companies.retrieve(companyId)
+    // The owner ID might be in different fields depending on SDK version
+    const ownerId = (company as any).authorized_user || (company as any).owner_user_id || (company as any).owner
+    
+    if (!ownerId) {
+      console.log('No owner found for company:', companyId, 'Company data:', JSON.stringify(company))
+      // If we can't find the owner, check if the company itself has access
+      // This is a fallback - the company ID might work directly
+      try {
+        const companyAccess = await sdk.users.checkAccess(APP_PRODUCT_ID, { id: companyId })
+        return companyAccess.has_access ?? false
+      } catch {
+        return false
+      }
+    }
+    
+    console.log('Checking app subscription for company owner:', { companyId, ownerId })
+    
+    // Check if the owner has access to your app's product
+    const access = await sdk.users.checkAccess(APP_PRODUCT_ID, { id: ownerId })
+    
+    console.log('Company subscription check result:', { 
+      companyId, 
+      ownerId, 
+      hasAccess: access.has_access,
+      accessLevel: access.access_level
+    })
+    
+    return access.has_access ?? false
+  } catch (error) {
+    console.error('Error checking company app subscription:', error)
+    return false
+  }
+}
+
 // Get company ID from an experience ID
 export async function getCompanyIdFromExperience(experienceId: string): Promise<string | null> {
   // If it's already a company ID, return it

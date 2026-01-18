@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { isCompanyAdmin } from '@/lib/db'
-import { whopsdk, checkUserAccessLevel, getCompanyIdFromExperience } from '@/lib/whop-sdk'
+import { whopsdk, checkUserAccessLevel, getCompanyIdFromExperience, checkCompanyAppSubscription } from '@/lib/whop-sdk'
 import ExperienceClient from './ExperienceClient'
 
 interface PageProps {
@@ -128,31 +128,55 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   const defaultViewerName = `Viewer_${Math.random().toString(36).substring(2, 6).toUpperCase()}`
   const username = whopUsername || (isAdminMode ? 'Rayvaughnfx' : defaultViewerName)
   
-  // Check if user has paid access to this experience/product
-  let hasAccess = whopHasAccess // Trust header if present
+  // Check if the COMPANY OWNER has an active subscription to the app
+  // This gates the entire app - if the Whop owner hasn't paid, no one can access
+  const companyHasSubscription = await checkCompanyAppSubscription(companyId)
+  console.log('Company subscription check:', { companyId, companyHasSubscription })
   
-  if (userId) {
+  // User is admin if: header says admin, OR in company admin list, OR admin mode (for testing)
+  const userIsAdmin = isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
+  
+  // Access is granted if:
+  // 1. The company owner has paid for the app subscription, AND
+  // 2. The user has access to this experience (via Whop headers or SDK check)
+  let userHasExperienceAccess = whopHasAccess || userIsAdmin
+  
+  if (!userHasExperienceAccess && userId) {
     try {
       const access = await checkUserAccessLevel(experienceId, userId)
-      hasAccess = hasAccess || access.hasAccess
-      console.log('Access check for experience:', { experienceId, userId, hasAccess: access.hasAccess })
+      userHasExperienceAccess = access.hasAccess
+      console.log('User experience access check:', { experienceId, userId, hasAccess: access.hasAccess })
     } catch (e) {
       console.error('Error checking access level:', e)
     }
   }
   
-  // User is admin if: header says admin, OR in company admin list, OR admin mode (for testing)
-  const userIsAdmin = isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
+  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyHasSubscription, userHasExperienceAccess, companyId, whopUserRole, isWhopAdmin })
   
-  // Admins always have access
-  if (userIsAdmin) {
-    hasAccess = true
+  // If the company owner hasn't subscribed to the app, show subscription required page
+  if (!companyHasSubscription && !isAdminMode) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-3">App Not Activated</h1>
+          <p className="text-zinc-400 mb-6">
+            The owner of this Whop needs to subscribe to the Zoom Livestream app to enable this feature.
+          </p>
+          <p className="text-zinc-500 text-sm">
+            If you are the owner, please visit the app settings to activate your subscription.
+          </p>
+        </div>
+      </div>
+    )
   }
   
-  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, hasAccess, companyId, whopUserRole, isWhopAdmin })
-  
-  // If user doesn't have access, show access denied page
-  if (!hasAccess && !isAdminMode) {
+  // If user doesn't have access to this specific experience, show access denied
+  if (!userHasExperienceAccess && !isAdminMode) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
         <div className="text-center max-w-md mx-auto">
@@ -163,21 +187,7 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">Access Required</h1>
           <p className="text-zinc-400 mb-6">
-            You need to purchase access to view this content.
-          </p>
-          <a 
-            href="https://whop.com/api-app-e4b-hovrp-3bh-qss-premium-access-to-zoom/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            Get Access
-          </a>
-          <p className="text-zinc-500 text-sm mt-4">
-            Already purchased? Try refreshing the page.
+            You don't have access to this experience. Please contact the Whop owner for access.
           </p>
         </div>
       </div>
