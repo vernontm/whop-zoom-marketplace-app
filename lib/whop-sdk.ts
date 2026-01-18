@@ -114,9 +114,13 @@ export async function checkCompanyAppSubscription(companyId: string): Promise<bo
     return access.has_access ?? false
   } catch (error) {
     console.error('Error checking company app subscription:', error)
+    // On error, default to FALSE (block access) - don't let errors bypass the paywall
     return false
   }
 }
+
+// Export the product ID for debugging
+export const APP_SUBSCRIPTION_PRODUCT_ID = APP_PRODUCT_ID
 
 // Get company ID from an experience ID
 export async function getCompanyIdFromExperience(experienceId: string): Promise<string | null> {
