@@ -153,13 +153,42 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   
   console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyHasSubscription, userHasExperienceAccess, companyId, whopUserRole, isWhopAdmin })
   
-  // If the company owner hasn't subscribed to the app, show empty/nothing for regular users
+  // If the company owner hasn't subscribed to the app, show subscription required page
+  // For admins: show the Get Access button
+  // For regular users: show empty page
   if (!companyHasSubscription && !isAdminMode) {
-    return (
-      <div className="min-h-screen bg-zinc-950">
-        {/* Empty state - app not activated, don't show anything to end users */}
-      </div>
-    )
+    if (userIsAdmin) {
+      // Admin sees the subscription prompt with Get Access button
+      return (
+        <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4">
+          <div className="text-center max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-6xl mb-6">🔒</div>
+            <h1 className="text-2xl font-bold text-zinc-900 mb-3">Access Denied</h1>
+            <p className="text-zinc-600 mb-6">
+              You need an active subscription to use this app.
+            </p>
+            <p className="text-zinc-500 text-sm mb-6">
+              Logged in as: {username}
+            </p>
+            <a 
+              href="https://whop.com/api-app-e4b-hovrp-3bh-qss-premium-access-to-zoom/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-colors"
+            >
+              Get Access
+            </a>
+          </div>
+        </div>
+      )
+    } else {
+      // Regular users see empty page
+      return (
+        <div className="min-h-screen bg-zinc-950">
+          {/* Empty state - app not activated, don't show anything to end users */}
+        </div>
+      )
+    }
   }
   
   // If user doesn't have access to this specific experience, show access denied
