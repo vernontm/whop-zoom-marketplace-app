@@ -78,30 +78,27 @@ export default async function DashboardPage({ params }: PageProps) {
   const companyHasSubscription = await checkCompanyAppSubscription(companyId)
   console.log('Dashboard - Company subscription check:', { companyId, companyHasSubscription })
   
-  // If no subscription, show the subscription required page for admins
+  // If no subscription, show the subscription required page for admins (dark theme)
   if (!companyHasSubscription) {
     return (
-      <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4">
-        <div className="text-center max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
-          {/* Lock Icon */}
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
           <div className="text-6xl mb-6">🔒</div>
           
-          <h1 className="text-2xl font-bold text-zinc-900 mb-3">Access Denied</h1>
-          <p className="text-zinc-600 mb-6">
+          <h1 className="text-2xl font-bold text-white mb-3">Access Denied</h1>
+          <p className="text-zinc-400 mb-6">
             You need an active subscription to use this app.
           </p>
           
-          {/* Show logged in user */}
           <p className="text-zinc-500 text-sm mb-6">
             Logged in as: {userName}
           </p>
           
-          {/* Get Access Button */}
           <a 
             href="https://whop.com/api-app-e4b-hovrp-3bh-qss-premium-access-to-zoom/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-colors"
+            className="inline-block px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors"
           >
             Get Access
           </a>
