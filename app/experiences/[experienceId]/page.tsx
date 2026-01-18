@@ -133,22 +133,27 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   const companyHasSubscription = await checkCompanyAppSubscription(companyId)
   console.log('Company subscription check:', { companyId, companyHasSubscription })
   
-  // User is admin if: header says admin, OR in company admin list, OR admin mode (for testing)
-  const userIsAdmin = isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
+  // Check user access level via SDK - this returns both hasAccess and isAdmin
+  let sdkIsAdmin = false
+  let userHasExperienceAccess = whopHasAccess
   
-  // Access is granted if:
-  // 1. The company owner has paid for the app subscription, AND
-  // 2. The user has access to this experience (via Whop headers or SDK check)
-  let userHasExperienceAccess = whopHasAccess || userIsAdmin
-  
-  if (!userHasExperienceAccess && userId) {
+  if (userId) {
     try {
-      const access = await checkUserAccessLevel(experienceId, userId)
-      userHasExperienceAccess = access.hasAccess
-      console.log('User experience access check:', { experienceId, userId, hasAccess: access.hasAccess })
+      const access = await checkUserAccessLevel(companyId, userId)
+      userHasExperienceAccess = userHasExperienceAccess || access.hasAccess
+      sdkIsAdmin = access.isAdmin
+      console.log('User experience access check:', { companyId, userId, hasAccess: access.hasAccess, isAdmin: access.isAdmin })
     } catch (e) {
       console.error('Error checking access level:', e)
     }
+  }
+  
+  // User is admin if: SDK says admin, OR header says admin, OR in company admin list, OR admin mode (for testing)
+  const userIsAdmin = sdkIsAdmin || isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
+  
+  // Admins always have experience access
+  if (userIsAdmin) {
+    userHasExperienceAccess = true
   }
   
   console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyHasSubscription, userHasExperienceAccess, companyId, whopUserRole, isWhopAdmin })

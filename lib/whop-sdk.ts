@@ -48,10 +48,10 @@ export async function checkUserAccessLevel(
       accessLevel: access.access_level 
     })
     
-    // access_level can be 'no_access' or 'customer' - admin check done separately via headers
+    // access_level can be 'no_access', 'customer', or 'admin'
     return {
       hasAccess: access.has_access ?? false,
-      isAdmin: false // Admin status determined by Whop headers, not this API
+      isAdmin: (access as any).access_level === 'admin' || (access as any).access_level === 'owner'
     }
   } catch (error) {
     console.error('Error checking access:', error)
@@ -82,7 +82,9 @@ export async function checkCompanyAppSubscription(companyId: string): Promise<bo
     // Get the company to find the owner
     const company = await sdk.companies.retrieve(companyId)
     // The owner ID might be in different fields depending on SDK version
-    const ownerId = (company as any).authorized_user || (company as any).owner_user_id || (company as any).owner
+    // owner_user can be an object with id, or a string
+    const ownerUser = (company as any).owner_user
+    const ownerId = typeof ownerUser === 'object' ? ownerUser?.id : (ownerUser || (company as any).authorized_user || (company as any).owner_user_id || (company as any).owner)
     
     if (!ownerId) {
       console.log('No owner found for company:', companyId, 'Company data:', JSON.stringify(company))
