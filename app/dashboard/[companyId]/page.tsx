@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { getCompanyZoomCredentials } from '@/lib/db'
-import { whopsdk, checkUserAccessLevel } from '@/lib/whop-sdk'
+import { whopsdk, checkUserAccessLevel, checkCompanyAppSubscription } from '@/lib/whop-sdk'
 import DashboardClient from './DashboardClient'
 
 interface PageProps {
@@ -72,6 +72,41 @@ export default async function DashboardPage({ params }: PageProps) {
   if (!isAdmin) {
     const { redirect } = await import('next/navigation')
     redirect(`/experiences/${companyId}`)
+  }
+  
+  // Check if company owner has an active subscription to the app
+  const companyHasSubscription = await checkCompanyAppSubscription(companyId)
+  
+  // If no subscription, show the subscription required page for admins
+  if (!companyHasSubscription) {
+    return (
+      <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
+          {/* Lock Icon */}
+          <div className="text-6xl mb-6">🔒</div>
+          
+          <h1 className="text-2xl font-bold text-zinc-900 mb-3">Access Denied</h1>
+          <p className="text-zinc-600 mb-6">
+            You need an active subscription to use this app.
+          </p>
+          
+          {/* Show logged in user */}
+          <p className="text-zinc-500 text-sm mb-6">
+            Logged in as: {userName}
+          </p>
+          
+          {/* Get Access Button */}
+          <a 
+            href="https://whop.com/api-app-e4b-hovrp-3bh-qss-premium-access-to-zoom/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-colors"
+          >
+            Get Access
+          </a>
+        </div>
+      </div>
+    )
   }
   
   // Fetch initial config server-side
