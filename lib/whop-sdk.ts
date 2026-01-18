@@ -98,10 +98,11 @@ export async function checkCompanyAppSubscription(companyId: string): Promise<bo
       }
     }
     
-    console.log('Checking app subscription for company owner:', { companyId, ownerId })
+    console.log('Checking app subscription for company owner:', { companyId, ownerId, productId: APP_PRODUCT_ID })
     
     // Check if the owner has access to your app's product
     const access = await sdk.users.checkAccess(APP_PRODUCT_ID, { id: ownerId })
+    console.log('Raw access response:', JSON.stringify(access))
     
     console.log('Company subscription check result:', { 
       companyId, 
