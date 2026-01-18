@@ -161,7 +161,10 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   // If the company owner hasn't subscribed to the app, show subscription required page
   // For admins: show the Get Access button
   // For regular users: show empty page
+  console.log('Subscription gate check:', { companyHasSubscription, isAdminMode, userIsAdmin, shouldBlock: !companyHasSubscription && !isAdminMode })
+  
   if (!companyHasSubscription && !isAdminMode) {
+    console.log('BLOCKING - No subscription, showing access denied page')
     if (userIsAdmin) {
       // Admin sees the subscription prompt with Get Access button
       return (

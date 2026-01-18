@@ -76,6 +76,7 @@ export default async function DashboardPage({ params }: PageProps) {
   
   // Check if company owner has an active subscription to the app
   const companyHasSubscription = await checkCompanyAppSubscription(companyId)
+  console.log('Dashboard - Company subscription check:', { companyId, companyHasSubscription })
   
   // If no subscription, show the subscription required page for admins
   if (!companyHasSubscription) {
