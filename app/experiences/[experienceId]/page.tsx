@@ -128,23 +128,63 @@ export default async function ExperiencePage({ params, searchParams }: PageProps
   const defaultViewerName = `Viewer_${Math.random().toString(36).substring(2, 6).toUpperCase()}`
   const username = whopUsername || (isAdminMode ? 'Rayvaughnfx' : defaultViewerName)
   
-  // For development/testing, allow access without Whop headers
-  const effectiveUserId = userId || 'whop-user'
-  // Check if user is authorized on the company (admin/owner) using Whop SDK
-  let isAuthorizedAdmin = false
+  // Check if user has paid access to this experience/product
+  let hasAccess = whopHasAccess // Trust header if present
+  
   if (userId) {
     try {
-      const access = await checkUserAccessLevel(companyId, userId)
-      isAuthorizedAdmin = access.isAdmin
+      const access = await checkUserAccessLevel(experienceId, userId)
+      hasAccess = hasAccess || access.hasAccess
+      console.log('Access check for experience:', { experienceId, userId, hasAccess: access.hasAccess })
     } catch (e) {
       console.error('Error checking access level:', e)
     }
   }
   
-  // User is admin if: Whop SDK says authorized, OR header says admin, OR in company admin list, OR admin mode
-  const userIsAdmin = isAuthorizedAdmin || isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
+  // User is admin if: header says admin, OR in company admin list, OR admin mode (for testing)
+  const userIsAdmin = isWhopAdmin || await isCompanyAdmin(companyId, username) || isAdminMode
   
-  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, companyId, whopUserRole, isWhopAdmin, isAuthorizedAdmin })
+  // Admins always have access
+  if (userIsAdmin) {
+    hasAccess = true
+  }
+  
+  console.log('User info:', { userId, username, whopUsername, isAdminMode, userIsAdmin, hasAccess, companyId, whopUserRole, isWhopAdmin })
+  
+  // If user doesn't have access, show access denied page
+  if (!hasAccess && !isAdminMode) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-3">Access Required</h1>
+          <p className="text-zinc-400 mb-6">
+            You need to purchase access to view this content.
+          </p>
+          <a 
+            href="https://whop.com/api-app-e4b-hovrp-3bh-qss-premium-access-to-zoom/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Get Access
+          </a>
+          <p className="text-zinc-500 text-sm mt-4">
+            Already purchased? Try refreshing the page.
+          </p>
+        </div>
+      </div>
+    )
+  }
+  
+  const effectiveUserId = userId || 'whop-user'
   
   return (
     <ExperienceClient

@@ -26,23 +26,32 @@ export const whopsdk = {
   }
 }
 
-// Check if user has admin access to a company
+// Check if user has access to a company/product (for paid access gating)
 export async function checkUserAccessLevel(
-  companyId: string,
+  resourceId: string,
   userId: string
 ): Promise<{ hasAccess: boolean; isAdmin: boolean }> {
   try {
-    // Only call checkAccess if companyId is a valid resource tag (biz_, prod_, or exp_)
-    if (!companyId || (!companyId.startsWith('biz_') && !companyId.startsWith('prod_') && !companyId.startsWith('exp_'))) {
-      console.log('Invalid resource tag for checkAccess:', companyId)
+    // Only call checkAccess if resourceId is a valid resource tag (biz_, prod_, or exp_)
+    if (!resourceId || (!resourceId.startsWith('biz_') && !resourceId.startsWith('prod_') && !resourceId.startsWith('exp_'))) {
+      console.log('Invalid resource tag for checkAccess:', resourceId)
       return { hasAccess: false, isAdmin: false }
     }
     
     const sdk = getWhopSdk()
-    const access = await sdk.users.checkAccess(companyId, { id: userId })
+    const access = await sdk.users.checkAccess(resourceId, { id: userId })
+    
+    console.log('Access check result:', { 
+      resourceId, 
+      userId, 
+      hasAccess: access.has_access, 
+      accessLevel: access.access_level 
+    })
+    
+    // access_level can be 'no_access' or 'customer' - admin check done separately via headers
     return {
       hasAccess: access.has_access ?? false,
-      isAdmin: access.access_level === 'admin'
+      isAdmin: false // Admin status determined by Whop headers, not this API
     }
   } catch (error) {
     console.error('Error checking access:', error)
